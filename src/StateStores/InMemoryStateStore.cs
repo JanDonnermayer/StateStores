@@ -11,13 +11,12 @@ namespace StateStores
 {
     public class InMemoryStateStore : IStateStore
     {
-        private ImmutableDictionary<Type, dynamic> mut_stateMap =
-            ImmutableDictionary<Type, dynamic>.Empty;
+        private ImmutableDictionary<Type, object> mut_stateMap =
+            ImmutableDictionary<Type, object>.Empty;
         private readonly ReplaySubject<Type> keySubject =
             new ReplaySubject<Type>(TaskPoolScheduler.Default);
         private readonly SemaphoreSlim semaphore =
-            new SemaphoreSlim(0, 1);
-
+            new SemaphoreSlim(1, 1);
 
         private async Task<IDisposable> GetLockAsync()
         {
@@ -26,7 +25,7 @@ namespace StateStores
         }
 
         private ImmutableDictionary<string, TValue> GetTypedMap<TValue>() =>
-            ImmutableInterlocked.GetOrAdd(
+            (ImmutableDictionary<string, TValue>)ImmutableInterlocked.GetOrAdd(
                 location: ref mut_stateMap,
                 key: typeof(TValue),
                 valueFactory: _ => ImmutableDictionary<string, TValue>.Empty);
