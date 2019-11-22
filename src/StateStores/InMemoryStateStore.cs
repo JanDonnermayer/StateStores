@@ -16,7 +16,7 @@ namespace StateStores
         private readonly ReplaySubject<Type> keySubject =
             new ReplaySubject<Type>(TaskPoolScheduler.Default);
         private readonly SemaphoreSlim semaphore =
-            new SemaphoreSlim(1, 1);
+            new SemaphoreSlim(0, 1);
 
         private async Task<IDisposable> GetLockAsync()
         {
@@ -47,7 +47,7 @@ namespace StateStores
 
             ImmutableInterlocked.Update(
                 location: ref mut_stateMap,
-                transformer: m => m.SetItem(typeof(T), map.Remove(key)));
+                transformer: m => m.SetItem(typeof(TokenStatePair<T>), map.Remove(key)));
 
             keySubject.OnNext(typeof(T));
 
@@ -63,7 +63,7 @@ namespace StateStores
 
             ImmutableInterlocked.Update(
                 location: ref mut_stateMap,
-                transformer: m => m.SetItem(typeof(T), map.SetItem(key, new TokenStatePair<T>(token, state))));
+                transformer: m => m.SetItem(typeof(TokenStatePair<T>), map.SetItem(key, new TokenStatePair<T>(token, state))));
 
             keySubject.OnNext(typeof(T));
 
