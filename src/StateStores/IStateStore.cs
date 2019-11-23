@@ -9,7 +9,7 @@ namespace StateStores
         Task<bool> TrySetAsync<T>(string key, string token, T state);
 
         Task<bool> TryRemoveAsync<T>(string key, string token);
-
+        
         IObservable<IEnumerable<KeyValuePair<string, T>>> GetObservable<T>();
     }
 
