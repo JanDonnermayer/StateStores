@@ -27,17 +27,17 @@ namespace StateStores.Test
 
             var store = GetStateStore();
 
-            const string KEY = "lel";
+            const string KEY = "key";
+            const string TOKEN = "token";
 
             // Can create
-            var proxy = store.CreateProxy<string>(KEY);
+            var proxy = store.CreateProxy<string>(KEY, TOKEN);
 
             // Can set
-            var results = await Task.WhenAll(GetStates().Select(proxy.TrySetAsync));
+            var results = (await Task.WhenAll(GetStates().Select(proxy.TrySetAsync)))
+                   .Append(await proxy.TryRemoveAsync());
 
             Assert.IsTrue(results.All(_ => _));
-
-            await proxy.DisposeAsync();
         }
     }
 }

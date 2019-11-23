@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace StateStores
 {
-    public class InMemoryStateStore : IStateStore
+    public sealed class InMemoryStateStore : IStateStore
     {
 
         #region  Private Members
