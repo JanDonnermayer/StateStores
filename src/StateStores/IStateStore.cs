@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace StateStores
 {
-    interface IStateStore
+    public interface IStateStore
     {
         Task<bool> TrySetAsync<T>(string key, string token, T state);
 
@@ -12,4 +12,6 @@ namespace StateStores
 
         IObservable<IEnumerable<KeyValuePair<string, T>>> GetObservable<T>();
     }
+
+
 }
