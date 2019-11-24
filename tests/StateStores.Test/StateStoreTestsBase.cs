@@ -26,22 +26,28 @@ namespace StateStores.Test
 
             var store = GetStateStore();
 
-            // Can set using Token1
+            // Can enter using Token1
             AssertOk(await store.EnterAsync(KEY, TOKEN_1, SAMPLE_STATE));
+            
+            // Cannot enter using Token2
+            AssertError(await store.EnterAsync(KEY, TOKEN_1, SAMPLE_STATE));
 
-            // Can update using Token1
+            // Cannot enter second time using Token1
+            AssertError(await store.EnterAsync(KEY, TOKEN_1, SAMPLE_STATE));
+
+            // Can transfer using Token1
             AssertOk(await store.TransferAsync(KEY, TOKEN_1, SAMPLE_STATE, SAMPLE_STATE));
 
-            // Cannot update using Token2
+            // Cannot transfer using Token2
             AssertError(await store.TransferAsync(KEY, TOKEN_2, SAMPLE_STATE, SAMPLE_STATE));
 
-            // Cannot remove using Token2
+            // Cannot exit using Token2
             AssertError(await store.ExitAsync<int>(KEY, TOKEN_2));
 
-            // Can remove using Token1
+            // Can exit using Token1
             AssertOk(await store.ExitAsync<int>(KEY, TOKEN_1));
 
-            // Cannot remove second time using Token1
+            // Cannot exit second time using Token1
             AssertError(await store.ExitAsync<int>(KEY, TOKEN_1));
         }
 

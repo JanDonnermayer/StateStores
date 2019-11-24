@@ -47,7 +47,7 @@ namespace StateStores
 
         #region  Implementation of IStateStore
 
-        public IObservable<IEnumerable<KeyValuePair<string, T>>> GetObservable<T>() =>
+        public IObservable<IImmutableDictionary<string, T>> GetObservable<T>() =>
             keySubject
                 .Where(k => k is T)
                 .Throttle(TimeSpan.FromMilliseconds(100))

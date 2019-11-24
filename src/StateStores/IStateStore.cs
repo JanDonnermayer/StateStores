@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Collections.Immutable;
 
 namespace StateStores
 {
@@ -12,7 +13,7 @@ namespace StateStores
 
         Task<StateStoreResult> ExitAsync<T>(string key, string token);
         
-        IObservable<IEnumerable<KeyValuePair<string, T>>> GetObservable<T>();
+        IObservable<IImmutableDictionary<string, T>> GetObservable<T>();
     }
 
 

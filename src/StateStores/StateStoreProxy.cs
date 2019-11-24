@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,7 +13,7 @@ namespace StateStores
 
         #region  Private Types
 
-        private struct StateStoreProxyInstance<TState> : IStateStoreProxy<TState>
+        private class StateStoreProxyInstance<TState> : IStateStoreProxy<TState>
         {
             private readonly IStateStore store;
             private readonly string key;

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace StateStores
@@ -10,6 +11,7 @@ namespace StateStores
         Task<StateStoreResult> TransferAsync(TState state1, TState state2);
 
         Task<StateStoreResult> ExitAsync();
+
     }
 
 }
