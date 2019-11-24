@@ -1,14 +1,17 @@
-namespace StateStores
+﻿namespace StateStores
 {
-    public abstract class StateTransferResult
+    public abstract class StateStoreResult
     {
-        public sealed class OK : StateTransferResult { }
+        public sealed class Ok : StateStoreResult { }
 
-        public abstract class Error : StateTransferResult { }
+        public abstract class Error : StateStoreResult { }
 
         public sealed class ConnectionError : Error { }
 
         public sealed class TokenError : Error { }
+
+        public sealed class StateError : Error { }
+        
     }
 
 }

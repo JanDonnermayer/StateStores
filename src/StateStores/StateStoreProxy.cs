@@ -6,7 +6,7 @@ namespace StateStores
 {
     public static class StateStoreProxy
     {
-        public static IStateStoreProxy<TState> CreateProxy<TState>(this IStateStore store, string key, string token) => 
+        public static IStateStoreProxy<TState> CreateProxy<TState>(this IStateStore store, string key, string token) =>
             new StateStoreProxyInstance<TState>(store, key, token);
 
         #region  Private Types
@@ -24,11 +24,14 @@ namespace StateStores
                 this.token = token ?? throw new ArgumentNullException(nameof(token));
             }
 
-            async Task<bool> IStateStoreProxy<TState>.TryRemoveAsync() => 
-                await store.TryRemoveAsync<TState>(key, token).ConfigureAwait(false);
+            async Task<StateStoreResult> IStateStoreProxy<TState>.EnterAsync(TState state) => 
+                await store.EnterAsync(key, token, state).ConfigureAwait(false);
 
-            async Task<bool> IStateStoreProxy<TState>.TrySetAsync(TState state) => 
-                await store.TrySetAsync(key, token, state).ConfigureAwait(false);
+            async Task<StateStoreResult> IStateStoreProxy<TState>.ExitAsync() => 
+                await store.ExitAsync<TState>(key, token).ConfigureAwait(false);
+
+            async Task<StateStoreResult> IStateStoreProxy<TState>.TransferAsync(TState state1, TState state2) => 
+                await store.TransferAsync(key, token, state1, state2).ConfigureAwait(false);
         }
 
         #endregion

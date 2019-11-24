@@ -13,8 +13,5 @@ namespace StateStores.Test
         [Test]
         public override Task BasicFunctionality() => base.BasicFunctionality(); 
 
-        [Test]
-        public override Task ParallelFunctionality() => base.ParallelFunctionality(); 
-
     }
 }

@@ -5,9 +5,11 @@ namespace StateStores
 {
     public interface IStateStoreProxy<TState>
     {
-        Task<bool> TrySetAsync(TState state);
+        Task<StateStoreResult> EnterAsync(TState state);
 
-        Task<bool> TryRemoveAsync();
+        Task<StateStoreResult> TransferAsync(TState state1, TState state2);
+
+        Task<StateStoreResult> ExitAsync();
     }
 
 }

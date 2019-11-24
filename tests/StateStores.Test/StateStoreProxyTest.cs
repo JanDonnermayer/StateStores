@@ -12,32 +12,34 @@ namespace StateStores.Test
         private IStateStore GetStateStore()
         {
             var store = new Moq.Mock<IStateStore>();
-            store.SetReturnsDefault(Task.FromResult(true));
+            store.SetReturnsDefault(Task.FromResult((StateStoreResult)new StateStoreResult.Ok()));
             return store.Object;
         }
-        
+
+        static void AssertOk(StateStoreResult result) =>
+            Assert.IsInstanceOf(typeof(StateStoreResult.Ok), result);
+
+        static void AssertError(StateStoreResult result) =>
+            Assert.IsInstanceOf(typeof(StateStoreResult.Error), result);
 
         [Test]
         public async Task BasicFunctionality()
         {
-            const int STATES_COUNT = 100000;
-
-            static IEnumerable<string> GetStates() =>
-                Enumerable.Range(0, STATES_COUNT).Select(index => $"value_{index}");
-
-            var store = GetStateStore();
-
             const string KEY = "key";
             const string TOKEN = "token";
+            const int SAMPLE_STATE = 0;
 
-            // Can create
-            var proxy = store.CreateProxy<string>(KEY, TOKEN);
+            var store = GetStateStore();
+            var proxy = store.CreateProxy<int>(KEY, TOKEN);
 
-            // Can set
-            var results = (await Task.WhenAll(GetStates().Select(proxy.TrySetAsync)))
-                   .Append(await proxy.TryRemoveAsync());
+            // Can set 
+            AssertOk(await proxy.EnterAsync(SAMPLE_STATE));
 
-            Assert.IsTrue(results.All(_ => _));
+            // Can update 
+            AssertOk(await proxy.TransferAsync(SAMPLE_STATE, SAMPLE_STATE));
+
+            // Can remove 
+            AssertOk(await proxy.ExitAsync());
         }
     }
 }

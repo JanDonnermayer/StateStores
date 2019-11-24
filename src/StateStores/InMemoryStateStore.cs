@@ -55,29 +55,13 @@ namespace StateStores
                     GetTypedStateMap<TokenStatePair<T>>()
                     .ToImmutableDictionary(kvp => kvp.Key, kvp => kvp.Value.State));
 
-
-        public async Task<bool> TryRemoveAsync<T>(string key, string token)
+        public async Task<StateStoreResult> EnterAsync<T>(string key, string token, T state)
         {
             using var _ = await GetLockAsync<T>();
 
             var map = GetTypedStateMap<TokenStatePair<T>>();
-            if (!map.TryGetValue(key, out var tsp) || tsp.Token != token) return false;
 
-            ImmutableInterlocked.Update(
-                location: ref mut_stateMap,
-                transformer: m => m.SetItem(typeof(TokenStatePair<T>), map.Remove(key)));
-
-            keySubject.OnNext(typeof(T));
-
-            return true;
-        }
-
-        public async Task<bool> TrySetAsync<T>(string key, string token, T state)
-        {
-            using var _ = await GetLockAsync<T>();
-
-            var map = GetTypedStateMap<TokenStatePair<T>>();
-            if (map.TryGetValue(key, out var tsp) && tsp.Token != token) return false;
+            if (map.ContainsKey(key)) return new StateStoreResult.StateError();
 
             ImmutableInterlocked.Update(
                 location: ref mut_stateMap,
@@ -85,8 +69,47 @@ namespace StateStores
 
             keySubject.OnNext(typeof(T));
 
-            return true;
+            return new StateStoreResult.Ok();
         }
+
+        public async Task<StateStoreResult> TransferAsync<T>(string key, string token, T state1, T state2)
+        {
+            using var _ = await GetLockAsync<T>();
+
+            var map = GetTypedStateMap<TokenStatePair<T>>();
+
+            if (!map.TryGetValue(key, out var tsp)) return new StateStoreResult.StateError();
+            if (!tsp.State.Equals(state1)) return new StateStoreResult.StateError();
+            if (tsp.Token != token) return new StateStoreResult.TokenError();
+
+            ImmutableInterlocked.Update(
+                location: ref mut_stateMap,
+                transformer: m => m.SetItem(typeof(TokenStatePair<T>), map.SetItem(key, new TokenStatePair<T>(token, state2))));
+
+            keySubject.OnNext(typeof(T));
+
+            return new StateStoreResult.Ok();
+        }
+
+
+        public async Task<StateStoreResult> ExitAsync<T>(string key, string token)
+        {
+            using var _ = await GetLockAsync<T>();
+
+            var map = GetTypedStateMap<TokenStatePair<T>>();
+
+            if (!map.TryGetValue(key, out var tsp)) return new StateStoreResult.StateError();
+            if (tsp.Token != token) return new StateStoreResult.TokenError();
+
+            ImmutableInterlocked.Update(
+                location: ref mut_stateMap,
+                transformer: m => m.SetItem(typeof(TokenStatePair<T>), map.Remove(key)));
+
+            keySubject.OnNext(typeof(T));
+
+            return new StateStoreResult.Ok();
+        }
+
 
         #endregion
 
