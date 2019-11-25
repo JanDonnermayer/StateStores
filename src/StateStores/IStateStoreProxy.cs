@@ -4,14 +4,19 @@ using System.Threading.Tasks;
 
 namespace StateStores
 {
-    public interface IStateStoreProxy<TState>
+    public interface IStateStoreProxy<TState> 
     {
-        Task<StateStoreResult> EnterAsync(TState state);
+        Task<StateStoreResult> AddAsync(TState nextState);
 
-        Task<StateStoreResult> TransferAsync(TState state1, TState state2);
+        Task<StateStoreResult> UpdateAsync(TState currentState, TState nextState);
 
-        Task<StateStoreResult> ExitAsync();
+        Task<StateStoreResult> RemoveAsync(TState currentState);
 
+        IObservable<TState> OnAdd();
+
+        IObservable<(TState previousState, TState currentState)> OnUpdate();
+        
+        IObservable<TState> OnRemove();
     }
 
 }

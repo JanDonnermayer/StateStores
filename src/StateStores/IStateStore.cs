@@ -7,12 +7,12 @@ namespace StateStores
 {
     public interface IStateStore
     {
-        Task<StateStoreResult> EnterAsync<T>(string key, string token, T state);
+        Task<StateStoreResult> AddAsync<T>(string key, string token, T nexT);
 
-        Task<StateStoreResult> TransferAsync<T>(string key, string token, T state1, T state2);
+        Task<StateStoreResult> UpdateAsync<T>(string key, string token, T currenT, T nexT);
 
-        Task<StateStoreResult> ExitAsync<T>(string key, string token);
-        
+        Task<StateStoreResult> RemoveAsync<T>(string key, string token, T currenT);
+
         IObservable<IImmutableDictionary<string, T>> GetObservable<T>();
     }
 

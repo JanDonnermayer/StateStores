@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -17,11 +18,17 @@ namespace StateStores
         private ImmutableDictionary<Type, SemaphoreSlim> mut_semaphoreMap =
             ImmutableDictionary<Type, SemaphoreSlim>.Empty;
 
-        private ImmutableDictionary<Type, object> mut_stateMap =
+        private ImmutableDictionary<Type, object> mut_stateMapMap =
             ImmutableDictionary<Type, object>.Empty;
 
-        private readonly ReplaySubject<Type> keySubject =
-            new ReplaySubject<Type>(TaskPoolScheduler.Default);
+        private ImmutableDictionary<Type, BehaviorSubject<Unit>> mut_subjectMap =
+            ImmutableDictionary<Type, BehaviorSubject<Unit>>.Empty;
+
+        private BehaviorSubject<Unit> GetSubject<TValue>() =>
+            ImmutableInterlocked.GetOrAdd(
+                location: ref mut_subjectMap,
+                key: typeof(TValue),
+                valueFactory: _ => new BehaviorSubject<Unit>(Unit.Default));
 
         private SemaphoreSlim GetSemaphore<TValue>() =>
             ImmutableInterlocked.GetOrAdd(
@@ -29,9 +36,9 @@ namespace StateStores
                 key: typeof(TValue),
                 valueFactory: _ => new SemaphoreSlim(1, 1));
 
-        private ImmutableDictionary<string, TValue> GetTypedStateMap<TValue>() =>
+        private ImmutableDictionary<string, TValue> GetStateMap<TValue>() =>
             (ImmutableDictionary<string, TValue>)ImmutableInterlocked.GetOrAdd(
-                location: ref mut_stateMap,
+                location: ref mut_stateMapMap,
                 key: typeof(TValue),
                 valueFactory: _ => ImmutableDictionary<string, TValue>.Empty);
 
@@ -47,68 +54,67 @@ namespace StateStores
 
         #region  Implementation of IStateStore
 
-        public IObservable<IImmutableDictionary<string, T>> GetObservable<T>() =>
-            keySubject
-                .Where(k => k is T)
-                .Throttle(TimeSpan.FromMilliseconds(100))
-                .Select(_ =>
-                    GetTypedStateMap<TokenStatePair<T>>()
-                    .ToImmutableDictionary(kvp => kvp.Key, kvp => kvp.Value.State));
-
-        public async Task<StateStoreResult> EnterAsync<T>(string key, string token, T state)
+        public async Task<StateStoreResult> AddAsync<T>(string key, string token, T nextState)
         {
             using var _ = await GetLockAsync<T>();
 
-            var map = GetTypedStateMap<TokenStatePair<T>>();
+            var map = GetStateMap<TokenStatePair<T>>();
 
             if (map.ContainsKey(key)) return new StateStoreResult.StateError();
 
             ImmutableInterlocked.Update(
-                location: ref mut_stateMap,
-                transformer: m => m.SetItem(typeof(TokenStatePair<T>), map.SetItem(key, new TokenStatePair<T>(token, state))));
+                location: ref mut_stateMapMap,
+                transformer: m => m.SetItem(typeof(TokenStatePair<T>), map.SetItem(key, new TokenStatePair<T>(token, nextState))));
 
-            keySubject.OnNext(typeof(T));
-
-            return new StateStoreResult.Ok();
-        }
-
-        public async Task<StateStoreResult> TransferAsync<T>(string key, string token, T state1, T state2)
-        {
-            using var _ = await GetLockAsync<T>();
-
-            var map = GetTypedStateMap<TokenStatePair<T>>();
-
-            if (!map.TryGetValue(key, out var tsp)) return new StateStoreResult.StateError();
-            if (!tsp.State.Equals(state1)) return new StateStoreResult.StateError();
-            if (tsp.Token != token) return new StateStoreResult.TokenError();
-
-            ImmutableInterlocked.Update(
-                location: ref mut_stateMap,
-                transformer: m => m.SetItem(typeof(TokenStatePair<T>), map.SetItem(key, new TokenStatePair<T>(token, state2))));
-
-            keySubject.OnNext(typeof(T));
+            GetSubject<T>().OnNext(Unit.Default);
 
             return new StateStoreResult.Ok();
         }
 
-
-        public async Task<StateStoreResult> ExitAsync<T>(string key, string token)
+        public async Task<StateStoreResult> UpdateAsync<T>(string key, string token, T currentState, T nextState)
         {
             using var _ = await GetLockAsync<T>();
 
-            var map = GetTypedStateMap<TokenStatePair<T>>();
+            var map = GetStateMap<TokenStatePair<T>>();
 
             if (!map.TryGetValue(key, out var tsp)) return new StateStoreResult.StateError();
+            if (!tsp.State.Equals(currentState)) return new StateStoreResult.StateError();
             if (tsp.Token != token) return new StateStoreResult.TokenError();
 
             ImmutableInterlocked.Update(
-                location: ref mut_stateMap,
+                location: ref mut_stateMapMap,
+                transformer: m => m.SetItem(typeof(TokenStatePair<T>), map.SetItem(key, new TokenStatePair<T>(token, nextState))));
+
+            GetSubject<T>().OnNext(Unit.Default);
+
+            return new StateStoreResult.Ok();
+        }
+
+
+        public async Task<StateStoreResult> RemoveAsync<T>(string key, string token, T currentState)
+        {
+            using var _ = await GetLockAsync<T>();
+
+            var map = GetStateMap<TokenStatePair<T>>();
+
+            if (!map.TryGetValue(key, out var tsp)) return new StateStoreResult.StateError();
+            if (!tsp.State.Equals(currentState)) return new StateStoreResult.StateError();
+            if (tsp.Token != token) return new StateStoreResult.TokenError();
+
+            ImmutableInterlocked.Update(
+                location: ref mut_stateMapMap,
                 transformer: m => m.SetItem(typeof(TokenStatePair<T>), map.Remove(key)));
 
-            keySubject.OnNext(typeof(T));
+            GetSubject<T>().OnNext(Unit.Default);
 
             return new StateStoreResult.Ok();
         }
+
+        public IObservable<IImmutableDictionary<string, T>> GetObservable<T>() =>
+            GetSubject<T>()
+                .Select(_ =>
+                    GetStateMap<TokenStatePair<T>>()
+                    .ToImmutableDictionary(kvp => kvp.Key, kvp => kvp.Value.State));
 
 
         #endregion

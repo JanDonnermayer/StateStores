@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
@@ -23,64 +24,42 @@ namespace StateStores.Test
             const string TOKEN_1 = "token1";
             const string TOKEN_2 = "token2";
             const int SAMPLE_STATE = 0;
+            const int EXPECTED_NOTIFICATION_COUNT = 3 + 1; //+1 for BehaviourSubject
+            const int OBSERVER_DELAY_MS = 400;
 
             var store = GetStateStore();
+
+            int mut_ActualNotificationCount = 0;
+            store.GetObservable<int>().Subscribe(_ => mut_ActualNotificationCount += 1);
 
             // Can enter using Token1
-            AssertOk(await store.EnterAsync(KEY, TOKEN_1, SAMPLE_STATE));
-            
+            AssertOk(await store.AddAsync(KEY, TOKEN_1, SAMPLE_STATE));
+
             // Cannot enter using Token2
-            AssertError(await store.EnterAsync(KEY, TOKEN_1, SAMPLE_STATE));
+            AssertError(await store.AddAsync(KEY, TOKEN_1, SAMPLE_STATE));
 
             // Cannot enter second time using Token1
-            AssertError(await store.EnterAsync(KEY, TOKEN_1, SAMPLE_STATE));
+            AssertError(await store.AddAsync(KEY, TOKEN_1, SAMPLE_STATE));
 
             // Can transfer using Token1
-            AssertOk(await store.TransferAsync(KEY, TOKEN_1, SAMPLE_STATE, SAMPLE_STATE));
+            AssertOk(await store.UpdateAsync(KEY, TOKEN_1, SAMPLE_STATE, SAMPLE_STATE));
 
             // Cannot transfer using Token2
-            AssertError(await store.TransferAsync(KEY, TOKEN_2, SAMPLE_STATE, SAMPLE_STATE));
+            AssertError(await store.UpdateAsync(KEY, TOKEN_2, SAMPLE_STATE, SAMPLE_STATE));
 
             // Cannot exit using Token2
-            AssertError(await store.ExitAsync<int>(KEY, TOKEN_2));
+            AssertError(await store.RemoveAsync(KEY, TOKEN_2, SAMPLE_STATE));
 
             // Can exit using Token1
-            AssertOk(await store.ExitAsync<int>(KEY, TOKEN_1));
+            AssertOk(await store.RemoveAsync(KEY, TOKEN_1, SAMPLE_STATE));
 
             // Cannot exit second time using Token1
-            AssertError(await store.ExitAsync<int>(KEY, TOKEN_1));
+            AssertError(await store.RemoveAsync(KEY, TOKEN_1, SAMPLE_STATE));
+
+            await Task.Delay(OBSERVER_DELAY_MS);
+
+            Assert.AreEqual(EXPECTED_NOTIFICATION_COUNT, mut_ActualNotificationCount);
         }
-
-        /*
-        public virtual async Task ParallelFunctionality()
-        {
-            const int STATES_COUNT = 100;
-
-            static IEnumerable<string> GetStates() =>
-                Enumerable.Range(0, STATES_COUNT).Select(index => $"value_{index}");
-
-            var store = GetStateStore();
-
-            async Task<IEnumerable<StateStoreResult>> UseStoreAsync(int index)
-            {
-                var key = $"key_{index}";
-                var token = $"token_{index}";
-
-                var r1 = await 
-                var r2 = 
-                return (await Task.WhenAll(GetStates().Select(async state =>
-                            await store.TrySetAsync(key, token, state))))
-                    .Append(await store.TryRemoveAsync<string>(key, token));
-            }
-
-            const int PARALLEL_WORKERS_COUNT = 1000;
-
-            var results = (await Task.WhenAll(Enumerable.Range(1, PARALLEL_WORKERS_COUNT)
-                .Select(UseStoreAsync))).SelectMany(_ => _);
-
-            Assert.IsTrue(results.All(_ => _));
-        }
-        */
 
     }
 }
