@@ -86,8 +86,8 @@ namespace StateStores.Test
 
             proxy.OnAdd
                 .Subscribe(i =>
-                {
-                    proxy.UpdateAsync(i, i++);
+                {                    
+                    proxy.UpdateAsync(i, i++);                    
                 });
 
             // Register concurrent handlers
