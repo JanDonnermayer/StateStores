@@ -54,7 +54,8 @@ namespace StateStores
 
         #region  Implementation of IStateStore
 
-        public async Task<StateStoreResult> AddAsync<T>(string key, string token, T nextState)
+        public async Task<StateStoreResult> AddAsync<T>(string key, string token, 
+            T nextState)
         {
             using var _ = await GetLockAsync<T>();
 
@@ -64,14 +65,17 @@ namespace StateStores
 
             ImmutableInterlocked.Update(
                 location: ref mut_stateMapMap,
-                transformer: m => m.SetItem(typeof(TokenStatePair<T>), map.SetItem(key, new TokenStatePair<T>(token, nextState))));
+                transformer: m => m.SetItem(
+                    key: typeof(TokenStatePair<T>),
+                    value: map.SetItem(key, new TokenStatePair<T>(token, nextState))));
 
             GetSubject<T>().OnNext(Unit.Default);
 
             return new StateStoreResult.Ok();
         }
 
-        public async Task<StateStoreResult> UpdateAsync<T>(string key, string token, T currentState, T nextState)
+        public async Task<StateStoreResult> UpdateAsync<T>(string key, string token,
+            T currentState, T nextState)
         {
             using var _ = await GetLockAsync<T>();
 
@@ -83,7 +87,9 @@ namespace StateStores
 
             ImmutableInterlocked.Update(
                 location: ref mut_stateMapMap,
-                transformer: m => m.SetItem(typeof(TokenStatePair<T>), map.SetItem(key, new TokenStatePair<T>(token, nextState))));
+                transformer: m => m.SetItem(
+                    key: typeof(TokenStatePair<T>),
+                    value: map.SetItem(key, new TokenStatePair<T>(token, nextState))));
 
             GetSubject<T>().OnNext(Unit.Default);
 
@@ -91,7 +97,8 @@ namespace StateStores
         }
 
 
-        public async Task<StateStoreResult> RemoveAsync<T>(string key, string token, T currentState)
+        public async Task<StateStoreResult> RemoveAsync<T>(string key, string token,
+            T currentState)
         {
             using var _ = await GetLockAsync<T>();
 
@@ -103,7 +110,9 @@ namespace StateStores
 
             ImmutableInterlocked.Update(
                 location: ref mut_stateMapMap,
-                transformer: m => m.SetItem(typeof(TokenStatePair<T>), map.Remove(key)));
+                transformer: m => m.SetItem(
+                    key: typeof(TokenStatePair<T>),
+                    value: map.Remove(key)));
 
             GetSubject<T>().OnNext(Unit.Default);
 

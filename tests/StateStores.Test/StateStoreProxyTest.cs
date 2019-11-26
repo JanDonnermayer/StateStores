@@ -26,8 +26,10 @@ namespace StateStores.Test
         {
             const string KEY = "key";
             const string TOKEN = "token";
+            
             const int SAMPLE_STATE_1 = 0;
             const int SAMPLE_STATE_2 = 1;
+
             const int EXPECTED_UPDATE_NOTIFICATION_COUNT = 1;
             const int EXPECTED_ADD_NOTIFICATION_COUNT = 1;
             const int EXPECTED_REMOVE_NOTIFICATION_COUNT = 1;
@@ -69,7 +71,7 @@ namespace StateStores.Test
                 mut_ActualRemoveNotificationCount);
         }
 
-
+        // This is a state-transition-chain where observers invoke transitions.
         [Test]
         public async Task ReactiveFunctionality()
         {
