@@ -78,10 +78,8 @@ namespace StateStores.Test
             const string KEY = "key";
             const string TOKEN = "token";
             const int STATE_COUNT = 10000;
-           
-            const int CONCURRENT_HANDLER_COUNT = 10;
 
-            var tcsFinal = new TaskCompletionSource<int>();
+            const int CONCURRENT_HANDLER_COUNT = 10;
 
             var store = GetStateStore();
             var proxy = store.CreateProxy<int>(KEY, TOKEN);
@@ -113,6 +111,8 @@ namespace StateStores.Test
                     });
             }
 
+
+            var tcsFinal = new TaskCompletionSource<int>();
             proxy.OnRemove.Subscribe(tcsFinal.SetResult);
 
             AssertOk(await proxy.AddAsync(0));
