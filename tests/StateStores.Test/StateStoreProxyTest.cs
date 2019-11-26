@@ -26,7 +26,7 @@ namespace StateStores.Test
         {
             const string KEY = "key";
             const string TOKEN = "token";
-            
+
             const int SAMPLE_STATE_1 = 0;
             const int SAMPLE_STATE_2 = 1;
 
@@ -78,9 +78,7 @@ namespace StateStores.Test
             const string KEY = "key";
             const string TOKEN = "token";
             const int STATE_COUNT = 10000;
-
-            // Concurrent handlers are redundant.
-            // That is, only one handler is able to change the state.
+           
             const int CONCURRENT_HANDLER_COUNT = 10;
 
             var tcsFinal = new TaskCompletionSource<int>();
@@ -104,7 +102,7 @@ namespace StateStores.Test
                         Task.Run(() =>
                         {
                             if (i < STATE_COUNT)
-                            {
+                            {   // redundant state updates are rejected
                                 proxy.UpdateAsync(i, i + 1);
                             }
                             else
