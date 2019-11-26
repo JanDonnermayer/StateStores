@@ -18,7 +18,8 @@ namespace StateStores.Test
         static void AssertTokenError(StateStoreResult result) =>
             Assert.IsInstanceOf(typeof(StateStoreResult.TokenError), result);
 
-        public static async Task TestBasicFunctionality(this IStateStore store, string key = "key")
+        public static async Task TestBasicFunctionality(this IStateStore store, 
+            string key = "key")
         {
             const string TOKEN_1 = "token1";
             const string TOKEN_2 = "token2";
