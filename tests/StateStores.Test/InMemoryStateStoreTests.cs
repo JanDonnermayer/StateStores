@@ -5,13 +5,18 @@ namespace StateStores.Test
 {
 
     [TestFixture]
-    public class InMemoryStateStoreTests : StateStoreTestsBase<InMemoryStateStore>
+    public class InMemoryStateStoreTests 
     {
-        protected override InMemoryStateStore GetStateStore() =>
+        private InMemoryStateStore GetStateStore() =>
             new InMemoryStateStore();
 
         [Test]
-        public override Task BasicFunctionality() => base.BasicFunctionality(); 
+        public Task BasicFunctionality() => 
+            GetStateStore().TestBasicFunctionality(); 
+
+        [Test]
+        public Task ParallelFunctionality() => 
+            GetStateStore().TestParallelFunctionality(); 
 
     }
 }

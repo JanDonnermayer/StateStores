@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace StateStores
 {
-    public interface IStateStoreProxy<TState> 
+    public interface IStateStoreProxy<TState>
     {
         Task<StateStoreResult> AddAsync(TState nextState);
 
@@ -12,11 +12,11 @@ namespace StateStores
 
         Task<StateStoreResult> RemoveAsync(TState currentState);
 
-        IObservable<TState> OnAdd();
+        IObservable<TState> OnAdd { get; }
 
-        IObservable<(TState previousState, TState currentState)> OnUpdate();
-        
-        IObservable<TState> OnRemove();
+        IObservable<(TState previousState, TState currentState)> OnUpdate { get; }
+
+        IObservable<TState> OnRemove { get; }
     }
 
 }

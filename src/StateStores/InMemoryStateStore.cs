@@ -78,8 +78,8 @@ namespace StateStores
             var map = GetStateMap<TokenStatePair<T>>();
 
             if (!map.TryGetValue(key, out var tsp)) return new StateStoreResult.StateError();
-            if (!tsp.State.Equals(currentState)) return new StateStoreResult.StateError();
             if (tsp.Token != token) return new StateStoreResult.TokenError();
+            if (!tsp.State.Equals(currentState)) return new StateStoreResult.StateError();
 
             ImmutableInterlocked.Update(
                 location: ref mut_stateMapMap,
@@ -98,8 +98,8 @@ namespace StateStores
             var map = GetStateMap<TokenStatePair<T>>();
 
             if (!map.TryGetValue(key, out var tsp)) return new StateStoreResult.StateError();
-            if (!tsp.State.Equals(currentState)) return new StateStoreResult.StateError();
             if (tsp.Token != token) return new StateStoreResult.TokenError();
+            if (!tsp.State.Equals(currentState)) return new StateStoreResult.StateError();
 
             ImmutableInterlocked.Update(
                 location: ref mut_stateMapMap,

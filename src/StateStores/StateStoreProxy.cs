@@ -49,17 +49,17 @@ namespace StateStores
             async Task<StateStoreResult> IStateStoreProxy<TState>.UpdateAsync(TState currentState, TState nextState) =>
                 await store.UpdateAsync(key, token, currentState, nextState).ConfigureAwait(false);
 
-            public IObservable<TState> OnAdd() =>
+            public IObservable<TState> OnAdd =>
                 GetObservable()
                     .Where(_ => _.current.ContainsKey(key) && !_.previous.ContainsKey(key))
                     .Select(_ => _.current[key]);
 
-            public IObservable<TState> OnRemove() =>
+            public IObservable<TState> OnRemove =>
                 GetObservable()
                     .Where(_ => !_.current.ContainsKey(key) && _.previous.ContainsKey(key))
                     .Select(_ => _.previous[key]);
 
-            public IObservable<(TState previousState, TState currentState)> OnUpdate() =>
+            public IObservable<(TState previousState, TState currentState)> OnUpdate =>
                 GetObservable()
                     .Where(_ => _.current.ContainsKey(key) && _.previous.ContainsKey(key))
                     .Select(_ => (_.previous[key], _.current[key]));
