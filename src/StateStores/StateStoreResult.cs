@@ -9,6 +9,8 @@
         public sealed class TokenError : Error { }
 
         public sealed class StateError : Error { }
+
+        public sealed class LockError : Error { }
         
     }
 

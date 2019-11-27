@@ -148,7 +148,6 @@ namespace StateStores.Redis
         public async Task<StateStoreResult> AddAsync<T>(string key, string token, T next)
         {
             var res = await UseLockAsync(key, db => AddInternalAsync(db, key, token, next));
-
             if (res is StateStoreResult.Ok) await NotifyObserversAsync<T>();
             return res;
         }
