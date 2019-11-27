@@ -15,6 +15,7 @@ namespace StateStores.Redis
         private readonly string server;
         private readonly Lazy<ConnectionMultiplexer> redis;
         private ImmutableDictionary<string, IObservable<RedisValue>> mut_ObserverDict;
+        private const string KEYS = "StateKeys";
 
         private IObservable<RedisValue> GetObservable(string channel)
         {
@@ -22,7 +23,7 @@ namespace StateStores.Redis
                 Observable.Create<RedisValue>(o =>
                 {
                     var subscriber = redis.Value.GetSubscriber();
-                    Action<RedisChannel, RedisValue> handler = (c, m) => o.OnNext(m);
+                    void handler(RedisChannel c, RedisValue m) => o.OnNext(m);
                     subscriber.Subscribe(channel, handler);
                     return Disposable.Create(() => subscriber.Unsubscribe(channel, handler));
                 });
@@ -69,7 +70,13 @@ namespace StateStores.Redis
         }
 
         public Task<StateStoreResult> RemoveAsync<T>(string key, string token, T current) => throw new NotImplementedException();
-        public IObservable<IImmutableDictionary<string, T>> GetObservable<T>() => throw new NotImplementedException();
+        public IObservable<IImmutableDictionary<string, T>> GetObservable<T>()
+        {
+            var db = redis.Value.GetDatabase();
+            var keys = db.SetScan(KEYS, "*");
+
+
+        }
 
 
 
