@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace StateStores.Test
 {
 
-    public abstract class StateStoreTests
+    public abstract class StateStoreTestsBase
     {
         static void AssertOk(StateStoreResult result) =>
             Assert.IsInstanceOf(typeof(StateStoreResult.Ok), result);

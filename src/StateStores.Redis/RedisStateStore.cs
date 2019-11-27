@@ -85,8 +85,12 @@ namespace StateStores.Redis
         static async Task<StateStoreResult> AddInternalAsync<T>(IDatabase database, string key, T next)
         {
             var transaction = database.CreateTransaction();
+            transaction.AddCondition(Condition.KeyNotExists(key));
 
-            if (!await transaction.StringSetAsync(key, StateToRedisValue(next))) return new StateStoreResult.Error();
+            _ = transaction.StringSetAsync(key, StateToRedisValue(next));
+            
+            if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
+
             await AddKeyToSetAsync<T>(database, key);
 
             return new StateStoreResult.Ok();
@@ -96,9 +100,10 @@ namespace StateStores.Redis
         {
             var transaction = database.CreateTransaction();
             transaction.AddCondition(Condition.StringEqual(key, StateToRedisValue(current)));
-            // ...
 
-            if (!await transaction.StringSetAsync(key, StateToRedisValue(next))) return new StateStoreResult.Error();
+            _ = transaction.StringSetAsync(key, StateToRedisValue(next));
+
+            if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
             
             return new StateStoreResult.Ok();
         }
@@ -108,7 +113,9 @@ namespace StateStores.Redis
             var transaction = database.CreateTransaction();
             transaction.AddCondition(Condition.StringEqual(key, StateToRedisValue(current)));
 
-            if (!await transaction.KeyDeleteAsync(key)) return new StateStoreResult.Error();
+            _ = transaction.KeyDeleteAsync(key);
+           
+            if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
             await RemoveKeyFromSetAsync<T>(database, key);
 
             return new StateStoreResult.Ok();

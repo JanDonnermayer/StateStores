@@ -6,7 +6,7 @@ namespace StateStores.Test
 {
 
     [TestFixture]
-    public class InMemoryStateStoreTests : StateStoreTests
+    public class InMemoryStateStoreTests : StateStoreTestsBase
     {
         private static InMemoryStateStore GetStateStore() =>
             new InMemoryStateStore();

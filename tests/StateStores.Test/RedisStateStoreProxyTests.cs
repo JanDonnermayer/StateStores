@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using StackExchange.Redis;
 using StateStores.Redis;
@@ -6,7 +6,7 @@ using StateStores.Redis;
 namespace StateStores.Test
 {
     [TestFixture]
-    public class RedisStateStoreTests : StateStoreTestsBase
+    public class RedisStateStoreProxyTests : StateStoreProxyTestBase
     {
         const string SERVER = "linux-genet01:7001";
 
@@ -25,10 +25,10 @@ namespace StateStores.Test
 
         [Test]
         public Task BasicFunctionality() =>
-            TestBasicFunctionality(GetStateStore());
+            BasicFunctionality(GetStateStore());
 
         [Test]
-        public Task ParallelFunctionality() =>
-            TestParallelFunctionality(GetStateStore());
+        public Task ReactiveFunctionality() =>
+            ReactiveFunctionality(GetStateStore());
     }
 }

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
@@ -8,22 +8,13 @@ using StateStores.InMemory;
 
 namespace StateStores.Test
 {
-    [TestFixture]
-    public class StateStoreProxyTest
+
+    public abstract class StateStoreProxyTestBase
     {
-
-        private IStateStore GetStateStore()
-        {
-            var store = new InMemoryStateStore();
-            return store;
-        }
-
         static void AssertOk(StateStoreResult result) =>
             Assert.IsInstanceOf(typeof(StateStoreResult.Ok), result);
 
-
-        [Test]
-        public async Task BasicFunctionality()
+        protected virtual async Task BasicFunctionality(IStateStore store)
         {
             const string KEY = "key";
 
@@ -40,7 +31,6 @@ namespace StateStores.Test
             int mut_ActualUpdateNotificationCount = 0;
             int mut_ActualRemoveNotificationCount = 0;
 
-            var store = GetStateStore();
             var proxy = store.CreateProxy<int>(KEY);
 
             proxy.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
@@ -72,15 +62,13 @@ namespace StateStores.Test
         }
 
         // This is a state-transition-chain where observers invoke transitions.
-        [Test]
-        public async Task ReactiveFunctionality()
+        protected virtual async Task ReactiveFunctionality(IStateStore store)
         {
             const string KEY = "key";
             const int STATE_COUNT = 10000;
 
             const int CONCURRENT_HANDLER_COUNT = 10;
 
-            var store = GetStateStore();
             var proxy = store.CreateProxy<int>(KEY);
 
             proxy.OnAdd
