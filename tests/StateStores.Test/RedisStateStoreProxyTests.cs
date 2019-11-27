@@ -8,8 +8,9 @@ namespace StateStores.Test
     [TestFixture]
     public class RedisStateStoreProxyTests : StateStoreProxyTestBase
     {
-        const string SERVER = "linux-genet01:7001";
-
+        //const string SERVER = "linux-genet01:7001";
+        const string SERVER = @"localhost:32768";
+        
         private static RedisStateStore GetStateStore() =>
             new RedisStateStore(SERVER);
 

@@ -18,11 +18,9 @@ namespace StateStores
 
         private class StateStoreProxyInstance<TState> : IStateStoreProxy<TState>
         {
-            private readonly IStateStore store;€
+            private readonly IStateStore store;
 
             private readonly string key;
-
-            private readonly string token;
 
             private readonly Lazy<IObservable<IImmutableDictionary<string, TState>>> lazyStateObervable;
 

@@ -8,7 +8,8 @@ namespace StateStores.Test
     [TestFixture]
     public class RedisStateStoreTests : StateStoreTestsBase
     {
-        const string SERVER = "linux-genet01:7001";
+        //const string SERVER = "linux-genet01:7001";
+        const string SERVER = @"localhost:32768";
 
         private static RedisStateStore GetStateStore() =>
             new RedisStateStore(SERVER);
@@ -16,7 +17,7 @@ namespace StateStores.Test
         private static void FlushAllDatabases(string server)
         {
             var _redis = ConnectionMultiplexer.Connect(server + ",allowAdmin=true");
-            _redis.GetServer(server).FlushAllDatabases();            
+            _redis.GetServer(server).FlushAllDatabases();
         }
 
         [SetUp]

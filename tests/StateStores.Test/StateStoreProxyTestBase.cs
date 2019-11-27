@@ -25,7 +25,7 @@ namespace StateStores.Test
             const int EXPECTED_ADD_NOTIFICATION_COUNT = 1;
             const int EXPECTED_REMOVE_NOTIFICATION_COUNT = 1;
 
-            const int OBSERVER_DELAY_MS = 100;
+            const int OBSERVER_DELAY_MS = 200;
 
             int mut_ActualAddNotificationCount = 0;
             int mut_ActualUpdateNotificationCount = 0;
@@ -39,13 +39,14 @@ namespace StateStores.Test
 
             // Can set 
             AssertOk(await proxy.AddAsync(SAMPLE_STATE_1));
+            await Task.Delay(OBSERVER_DELAY_MS);
 
             // Can update 
             AssertOk(await proxy.UpdateAsync(SAMPLE_STATE_1, SAMPLE_STATE_2));
+            await Task.Delay(OBSERVER_DELAY_MS);
 
             // Can remove 
             AssertOk(await proxy.RemoveAsync(SAMPLE_STATE_2));
-
             await Task.Delay(OBSERVER_DELAY_MS);
 
             Assert.AreEqual(
@@ -65,38 +66,31 @@ namespace StateStores.Test
         protected virtual async Task ReactiveFunctionality(IStateStore store)
         {
             const string KEY = "key";
-            const int STATE_COUNT = 10000;
-
-            const int CONCURRENT_HANDLER_COUNT = 10;
+            const int STATE_COUNT = 1000;
 
             var proxy = store.CreateProxy<int>(KEY);
 
             proxy.OnAdd
                 .Subscribe(i =>
-                {                    
-                    proxy.UpdateAsync(i, i++);                    
+                {
+                    proxy.UpdateAsync(i, i++);
                 });
 
-            // Register concurrent handlers
-            for (int i = 0; i < CONCURRENT_HANDLER_COUNT; i++)
-            {
-                proxy.OnUpdate
-                    .Select(_ => _.currentState)
-                    .Subscribe(i =>
+
+            proxy.OnUpdate
+                .Select(_ => _.currentState)
+                .Subscribe(i =>
+                {
+                    if (i < STATE_COUNT)
+                    {   // redundant state updates are rejected
+                        proxy.UpdateAsync(i, i + 1);
+                    }
+                    else
                     {
-                        Task.Run(() =>
-                        {
-                            if (i < STATE_COUNT)
-                            {   // redundant state updates are rejected
-                                proxy.UpdateAsync(i, i + 1);
-                            }
-                            else
-                            {
-                                proxy.RemoveAsync(i);
-                            }
-                        });
-                    });
-            }
+                        proxy.RemoveAsync(i);
+                    }
+                });
+
 
 
             var tcsFinal = new TaskCompletionSource<int>();

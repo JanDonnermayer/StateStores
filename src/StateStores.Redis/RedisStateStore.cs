@@ -22,7 +22,8 @@ namespace StateStores.Redis
 
         private readonly Lazy<ConnectionMultiplexer> redis;
 
-        private ImmutableDictionary<string, IObservable<RedisValue>> mut_ObserverDict;
+        private ImmutableDictionary<string, IObservable<RedisValue>> mut_ObserverDict =
+            ImmutableDictionary<string, IObservable<RedisValue>>.Empty;
 
 
         private IDatabase GetDatabase() =>
@@ -32,20 +33,15 @@ namespace StateStores.Redis
             redis.Value.GetSubscriber();
 
         private static string GetChannelName<TState>() =>
-            typeof(TState).FullName;
+           "udpdate_channel_" + typeof(TState).FullName;
 
-        private static string GetKeysSetName<TState>() =>
-            typeof(TState).FullName;
+        private static string GetSetName<TState>() =>
+           "set_" + typeof(TState).FullName;
 
-        private static Task AddKeyToSetAsync<TState>(IDatabaseAsync database, string key) =>
-            database.SetAddAsync(GetKeysSetName<TState>(), key);
-
-        private static Task RemoveKeyFromSetAsync<TState>(IDatabaseAsync database, string key) =>
-            database.SetRemoveAsync(GetKeysSetName<TState>(), key);
-
-        private Task NotifyObserversAsync<TState>() =>
-            GetSubscriber().PublishAsync(GetChannelName<TState>(), RedisValue.EmptyString);
-
+        private async Task NotifyObserversAsync<TState>() =>
+            await GetSubscriber().PublishAsync(
+                channel: GetChannelName<TState>(),
+                message: RedisValue.EmptyString);
 
         private IObservable<RedisValue> GetObservable(string channel)
         {
@@ -87,11 +83,11 @@ namespace StateStores.Redis
             var transaction = database.CreateTransaction();
             transaction.AddCondition(Condition.KeyNotExists(key));
 
-            _ = transaction.StringSetAsync(key, StateToRedisValue(next));
-            
+            _ = transaction.StringSetAsync(key, ToRedisValue(next));
+
             if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
 
-            await AddKeyToSetAsync<T>(database, key);
+            await database.SetAddAsync(GetSetName<T>(), ToRedisValue(new KeyValuePair<string, T>(key, next)));
 
             return new StateStoreResult.Ok();
         }
@@ -99,24 +95,28 @@ namespace StateStores.Redis
         static async Task<StateStoreResult> UpdateInternalAsync<T>(IDatabase database, string key, T current, T next)
         {
             var transaction = database.CreateTransaction();
-            transaction.AddCondition(Condition.StringEqual(key, StateToRedisValue(current)));
+            transaction.AddCondition(Condition.StringEqual(key, ToRedisValue(current)));
 
-            _ = transaction.StringSetAsync(key, StateToRedisValue(next));
+            _ = transaction.StringSetAsync(key, ToRedisValue(next));
 
             if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
-            
+
+            await database.SetRemoveAsync(GetSetName<T>(), ToRedisValue(new KeyValuePair<string, T>(key, current)));
+            await database.SetAddAsync(GetSetName<T>(), ToRedisValue(new KeyValuePair<string, T>(key, next)));
+
             return new StateStoreResult.Ok();
         }
 
         static async Task<StateStoreResult> RemoveInternalAsync<T>(IDatabase database, string key, T current)
         {
             var transaction = database.CreateTransaction();
-            transaction.AddCondition(Condition.StringEqual(key, StateToRedisValue(current)));
+            transaction.AddCondition(Condition.StringEqual(key, ToRedisValue(current)));
 
             _ = transaction.KeyDeleteAsync(key);
-           
+
             if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
-            await RemoveKeyFromSetAsync<T>(database, key);
+
+            await database.SetRemoveAsync(GetSetName<T>(), ToRedisValue(new KeyValuePair<string, T>(key, current)));
 
             return new StateStoreResult.Ok();
         }
@@ -150,20 +150,31 @@ namespace StateStores.Redis
 
         public IObservable<IImmutableDictionary<string, T>> GetObservable<T>()
         {
-            var db = GetDatabase();
-
-            return GetObservable(GetChannelName<T>()).Select(_ =>
-                db.SetMembers(GetKeysSetName<T>()).ToImmutableDictionary(m =>
-                    m.ToString(), m => RedisValueToState<T>(db.StringGet(m.ToString()))));
+            return GetObservable(GetChannelName<T>())
+                .Select(_ => Observable.FromAsync(async () =>      
+                   DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>()))))
+                .Concat()
+                .Merge(Observable.FromAsync(async () =>
+                   DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>()))))
+                .Replay(1)
+                .RefCount();
         }
 
         #endregion
 
+        static IImmutableDictionary<string, T> DictionaryFromValues<T>(RedisValue[] values) =>
+           values.Select(FromRedisValue<KeyValuePair<string, T>>).ToImmutableDictionary();
 
-        private static RedisValue StateToRedisValue<T>(T value) =>
+        private static RedisValue ToRedisValue<T>(T value) =>
             JsonConvert.SerializeObject(value);
 
-        private static T RedisValueToState<T>(RedisValue value) =>
-            JsonConvert.DeserializeObject<T>(value);
+        private static T FromRedisValue<T>(RedisValue value) =>
+            value.IsNullOrEmpty switch
+            {
+                false => JsonConvert.DeserializeObject<T>(value),
+                true => default
+            };
+
+
     }
 }
