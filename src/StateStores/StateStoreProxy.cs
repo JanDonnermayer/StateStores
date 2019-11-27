@@ -11,8 +11,8 @@ namespace StateStores
 {
     public static class StateStoreProxy
     {
-        public static IStateStoreProxy<TState> CreateProxy<TState>(this IStateStore store, string key, string token) =>
-            new StateStoreProxyInstance<TState>(store, key, token);
+        public static IStateStoreProxy<TState> CreateProxy<TState>(this IStateStore store, string key) =>
+            new StateStoreProxyInstance<TState>(store, key);
 
         #region  Private Types
 
@@ -29,11 +29,10 @@ namespace StateStores
             private IObservable<(IImmutableDictionary<string, TState> previous, IImmutableDictionary<string, TState> current)> GetObservable() =>
                 lazyStateObervable.Value.Buffer(2, 1).Select(_ => (_[0], _[1]));
 
-            public StateStoreProxyInstance(IStateStore store, string key, string token)
+            public StateStoreProxyInstance(IStateStore store, string key)
             {
                 this.store = store ?? throw new ArgumentNullException(nameof(store));
                 this.key = key ?? throw new ArgumentNullException(nameof(key));
-                this.token = token ?? throw new ArgumentNullException(nameof(token));
 
                 this.lazyStateObervable = new Lazy<IObservable<IImmutableDictionary<string, TState>>>(
                     store.GetObservable<TState>()
@@ -41,13 +40,13 @@ namespace StateStores
             }
 
             async Task<StateStoreResult> IStateStoreProxy<TState>.AddAsync(TState nextState) =>
-                await store.AddAsync(key, token, nextState).ConfigureAwait(false);
+                await store.AddAsync(key, nextState).ConfigureAwait(false);
 
             async Task<StateStoreResult> IStateStoreProxy<TState>.RemoveAsync(TState currentState) =>
-                await store.RemoveAsync(key, token, currentState).ConfigureAwait(false);
+                await store.RemoveAsync(key, currentState).ConfigureAwait(false);
 
             async Task<StateStoreResult> IStateStoreProxy<TState>.UpdateAsync(TState currentState, TState nextState) =>
-                await store.UpdateAsync(key, token, currentState, nextState).ConfigureAwait(false);
+                await store.UpdateAsync(key, currentState, nextState).ConfigureAwait(false);
 
             public IObservable<TState> OnAdd =>
                 GetObservable()

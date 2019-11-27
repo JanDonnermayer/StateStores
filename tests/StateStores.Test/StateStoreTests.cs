@@ -7,48 +7,40 @@ using NUnit.Framework;
 namespace StateStores.Test
 {
 
-    internal static class StateStoreTests
+    public abstract class StateStoreTests
     {
         static void AssertOk(StateStoreResult result) =>
             Assert.IsInstanceOf(typeof(StateStoreResult.Ok), result);
 
-        static void AssertStateError(StateStoreResult result) =>
-            Assert.IsInstanceOf(typeof(StateStoreResult.StateError), result);
+        static void AssertError(StateStoreResult result) =>
+            Assert.IsInstanceOf(typeof(StateStoreResult.Error), result);
 
-        static void AssertTokenError(StateStoreResult result) =>
-            Assert.IsInstanceOf(typeof(StateStoreResult.TokenError), result);
-
-        public static async Task TestBasicFunctionality(this IStateStore store,
-            string key = "key")
+        protected virtual async Task TestBasicFunctionality(IStateStore store,
+            string key = "keylel")
         {
-            const string TOKEN_1 = "token1";
-            const string TOKEN_2 = "token2";
+
             const string STATE_1 = "state1";
             const string STATE_2 = "state2";
 
 
-            AssertOk(await store.AddAsync(key, TOKEN_1, STATE_1));
+            AssertOk(await store.AddAsync(key, STATE_1));
 
-            AssertStateError(await store.AddAsync(key, TOKEN_1, STATE_1));
+            AssertError(await store.AddAsync(key, STATE_1));
 
-            AssertStateError(await store.AddAsync(key, TOKEN_1, STATE_2));
+            AssertError(await store.AddAsync(key, STATE_2));
 
-            AssertTokenError(await store.UpdateAsync(key, TOKEN_2, STATE_1, STATE_2));
+            AssertError(await store.UpdateAsync(key, STATE_2, STATE_2));
 
-            AssertStateError(await store.UpdateAsync(key, TOKEN_1, STATE_2, STATE_2));
+            AssertOk(await store.UpdateAsync(key, STATE_1, STATE_2));
 
-            AssertOk(await store.UpdateAsync(key, TOKEN_1, STATE_1, STATE_2));
+            AssertError(await store.RemoveAsync(key, STATE_1));
 
-            AssertTokenError(await store.RemoveAsync(key, TOKEN_2, STATE_2));
+            AssertOk(await store.RemoveAsync(key, STATE_2));
 
-            AssertStateError(await store.RemoveAsync(key, TOKEN_1, STATE_1));
-
-            AssertOk(await store.RemoveAsync(key, TOKEN_1, STATE_2));
-
-            AssertStateError(await store.RemoveAsync(key, TOKEN_1, STATE_1));
+            AssertError(await store.RemoveAsync(key, STATE_1));
         }
 
-        public static async Task TestParallelFunctionality(this IStateStore store)
+        protected virtual async Task TestParallelFunctionality(IStateStore store)
         {
             const int PARALLEL_WORKERS_COUNT = 10;
             const int COUNT = 100;
@@ -58,7 +50,7 @@ namespace StateStores.Test
                 .Select(async i =>
                 {
                     for (int j = 0; j < COUNT; j++)
-                        await store.TestBasicFunctionality(i.ToString());
+                        await TestBasicFunctionality(store, i.ToString());
                 }));
         }
 

@@ -26,7 +26,6 @@ namespace StateStores.Test
         public async Task BasicFunctionality()
         {
             const string KEY = "key";
-            const string TOKEN = "token";
 
             const int SAMPLE_STATE_1 = 0;
             const int SAMPLE_STATE_2 = 1;
@@ -42,7 +41,7 @@ namespace StateStores.Test
             int mut_ActualRemoveNotificationCount = 0;
 
             var store = GetStateStore();
-            var proxy = store.CreateProxy<int>(KEY, TOKEN);
+            var proxy = store.CreateProxy<int>(KEY);
 
             proxy.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
             proxy.OnUpdate.Subscribe(_ => mut_ActualUpdateNotificationCount += 1);
@@ -77,13 +76,12 @@ namespace StateStores.Test
         public async Task ReactiveFunctionality()
         {
             const string KEY = "key";
-            const string TOKEN = "token";
             const int STATE_COUNT = 10000;
 
             const int CONCURRENT_HANDLER_COUNT = 10;
 
             var store = GetStateStore();
-            var proxy = store.CreateProxy<int>(KEY, TOKEN);
+            var proxy = store.CreateProxy<int>(KEY);
 
             proxy.OnAdd
                 .Subscribe(i =>

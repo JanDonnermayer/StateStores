@@ -5,7 +5,8 @@ using StateStores.Redis;
 
 namespace StateStores.Test
 {
-    public class RedisStateStoreTests
+    [TestFixture]
+    public class RedisStateStoreTests : StateStoreTests
     {
         const string SERVER = "linux-genet01:7001";
 
@@ -24,10 +25,10 @@ namespace StateStores.Test
 
         [Test]
         public Task BasicFunctionality() =>
-            GetStateStore().TestBasicFunctionality();
+            TestBasicFunctionality(GetStateStore());
 
         [Test]
         public Task ParallelFunctionality() =>
-            GetStateStore().TestParallelFunctionality();
+            TestParallelFunctionality(GetStateStore());
     }
 }

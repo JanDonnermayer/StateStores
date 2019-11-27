@@ -55,42 +55,39 @@ namespace StateStores.InMemory
 
         #region  Implementation of IStateStore
 
-        public async Task<StateStoreResult> AddAsync<T>(string key, string token,
-            T nextState)
+        public async Task<StateStoreResult> AddAsync<T>(string key, T nextState)
         {
             using var _ = await GetLockAsync<T>();
 
-            var map = GetStateMap<TokenStatePair<T>>();
+            var map = GetStateMap<T>();
 
-            if (map.ContainsKey(key)) return new StateStoreResult.StateError();
+            if (map.ContainsKey(key)) return new StateStoreResult.Error();
 
             ImmutableInterlocked.Update(
                 location: ref mut_stateMapMap,
                 transformer: m => m.SetItem(
-                    key: typeof(TokenStatePair<T>),
-                    value: map.SetItem(key, new TokenStatePair<T>(token, nextState))));
+                    key: typeof(T),
+                    value: map.SetItem(key, nextState)));
 
             NotifyObservers<T>();
 
             return new StateStoreResult.Ok();
         }
 
-        public async Task<StateStoreResult> UpdateAsync<T>(string key, string token,
-            T currentState, T nextState)
+        public async Task<StateStoreResult> UpdateAsync<T>(string key, T currentState, T nextState)
         {
             using var _ = await GetLockAsync<T>();
 
-            var map = GetStateMap<TokenStatePair<T>>();
+            var map = GetStateMap<T>();
 
-            if (!map.TryGetValue(key, out var tsp)) return new StateStoreResult.StateError();
-            if (tsp.Token != token) return new StateStoreResult.TokenError();
-            if (!tsp.State.Equals(currentState)) return new StateStoreResult.StateError();
+            if (!map.TryGetValue(key, out var val)) return new StateStoreResult.Error();
+            if (!val.Equals(currentState)) return new StateStoreResult.Error();
 
             ImmutableInterlocked.Update(
                 location: ref mut_stateMapMap,
                 transformer: m => m.SetItem(
-                    key: typeof(TokenStatePair<T>),
-                    value: map.SetItem(key, new TokenStatePair<T>(token, nextState))));
+                    key: typeof(T),
+                    value: map.SetItem(key, nextState)));
 
             NotifyObservers<T>();
 
@@ -98,21 +95,19 @@ namespace StateStores.InMemory
         }
 
 
-        public async Task<StateStoreResult> RemoveAsync<T>(string key, string token,
-            T currentState)
+        public async Task<StateStoreResult> RemoveAsync<T>(string key, T currentState)
         {
             using var _ = await GetLockAsync<T>();
 
-            var map = GetStateMap<TokenStatePair<T>>();
+            var map = GetStateMap<T>();
 
-            if (!map.TryGetValue(key, out var tsp)) return new StateStoreResult.StateError();
-            if (tsp.Token != token) return new StateStoreResult.TokenError();
-            if (!tsp.State.Equals(currentState)) return new StateStoreResult.StateError();
+            if (!map.TryGetValue(key, out var val)) return new StateStoreResult.Error();
+            if (!val.Equals(currentState)) return new StateStoreResult.Error();
 
             ImmutableInterlocked.Update(
                 location: ref mut_stateMapMap,
                 transformer: m => m.SetItem(
-                    key: typeof(TokenStatePair<T>),
+                    key: typeof(T),
                     value: map.Remove(key)));
 
             NotifyObservers<T>();
@@ -121,29 +116,10 @@ namespace StateStores.InMemory
         }
 
         public IObservable<IImmutableDictionary<string, T>> GetObservable<T>() =>
-            GetSubject<T>()
-                .Select(_ =>
-                    GetStateMap<TokenStatePair<T>>()
-                    .ToImmutableDictionary(kvp => kvp.Key, kvp => kvp.Value.State));
-
+            GetSubject<T>().Select(_ => GetStateMap<T>());
 
         #endregion
 
-
-        #region  Private Types
-
-        private readonly struct TokenStatePair<TState>
-        {
-            public TokenStatePair(string token, TState state)
-            {
-                Token = token;
-                State = state;
-            }
-            public string Token { get; }
-            public TState State { get; }
-        }
-
-        #endregion
     }
 
 }

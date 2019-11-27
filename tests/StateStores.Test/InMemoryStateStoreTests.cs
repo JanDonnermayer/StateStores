@@ -6,18 +6,18 @@ namespace StateStores.Test
 {
 
     [TestFixture]
-    public class InMemoryStateStoreTests 
+    public class InMemoryStateStoreTests : StateStoreTests
     {
         private static InMemoryStateStore GetStateStore() =>
             new InMemoryStateStore();
 
         [Test]
         public Task BasicFunctionality() => 
-            GetStateStore().TestBasicFunctionality(); 
+            TestBasicFunctionality(GetStateStore()); 
 
         [Test]
         public Task ParallelFunctionality() => 
-            GetStateStore().TestParallelFunctionality(); 
+            TestParallelFunctionality(GetStateStore()); 
 
     }
 }

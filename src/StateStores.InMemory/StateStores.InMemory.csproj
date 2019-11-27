@@ -12,6 +12,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\src\StateStores\StateStores.csproj" />
+	  <ProjectReference Include="..\StateStores\StateStores.csproj" />
 	</ItemGroup>
 
 </Project>

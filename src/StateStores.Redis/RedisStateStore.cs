@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using System.Linq;
 using System.Threading;
 using System.Reactive.Concurrency;
+using System.Collections.Generic;
 
 namespace StateStores.Redis
 {
@@ -81,62 +82,36 @@ namespace StateStores.Redis
 
         #region  Internal
 
-        static async Task<StateStoreResult> AddInternalAsync<T>(IDatabaseAsync database, string key, string token, T next)
+        static async Task<StateStoreResult> AddInternalAsync<T>(IDatabase database, string key, T next)
         {
-            if (await database.KeyExistsAsync(key)) return new StateStoreResult.StateError();
+            var transaction = database.CreateTransaction();
 
-            await database.StringSetAsync(key, TokenStatePair.Create(token, next).ToRedisValue());
+            if (!await transaction.StringSetAsync(key, StateToRedisValue(next))) return new StateStoreResult.Error();
             await AddKeyToSetAsync<T>(database, key);
 
             return new StateStoreResult.Ok();
         }
 
-        static async Task<StateStoreResult> UpdateInternalAsync<T>(IDatabaseAsync database, string key, string token, T current, T next)
+        static async Task<StateStoreResult> UpdateInternalAsync<T>(IDatabase database, string key, T current, T next)
         {
+            var transaction = database.CreateTransaction();
+            transaction.AddCondition(Condition.StringEqual(key, StateToRedisValue(current)));
+            // ...
 
-            var val = await database.StringGetAsync(key);
-            if (!val.HasValue) return new StateStoreResult.StateError();
-            var tsp = TokenStatePair<T>.FromRedisValue(val);
-
-            if (!tsp.State.Equals(current)) return new StateStoreResult.StateError();
-            if (tsp.Token != token) return new StateStoreResult.TokenError();
-
-            await database.StringSetAsync(key, TokenStatePair.Create(token, next).ToRedisValue());
-
+            if (!await transaction.StringSetAsync(key, StateToRedisValue(next))) return new StateStoreResult.Error();
+            
             return new StateStoreResult.Ok();
         }
 
-        static async Task<StateStoreResult> RemoveInternalAsync<T>(IDatabaseAsync database, string key, string token, T current)
+        static async Task<StateStoreResult> RemoveInternalAsync<T>(IDatabase database, string key, T current)
         {
-            var val = await database.StringGetAsync(key);
-            if (!val.HasValue) return new StateStoreResult.StateError();
-            var tsp = TokenStatePair<T>.FromRedisValue(val);
+            var transaction = database.CreateTransaction();
+            transaction.AddCondition(Condition.StringEqual(key, StateToRedisValue(current)));
 
-            if (!tsp.State.Equals(current)) return new StateStoreResult.StateError();
-            if (tsp.Token != token) return new StateStoreResult.TokenError();
-
-            await database.KeyDeleteAsync(key);
+            if (!await transaction.KeyDeleteAsync(key)) return new StateStoreResult.Error();
             await RemoveKeyFromSetAsync<T>(database, key);
 
             return new StateStoreResult.Ok();
-        }
-
-        private async Task<StateStoreResult> UseLockAsync(string key, Func<IDatabaseAsync, Task<StateStoreResult>> @function)
-        {
-            var database = GetDatabase();
-
-            var lockToken = Guid.NewGuid().ToString();
-
-            if (!await database.LockTakeAsync(key, lockToken, TimeSpan.FromSeconds(3)))
-                return new StateStoreResult.LockError();
-            try
-            {
-                return await @function(database);
-            }
-            finally
-            {
-                await database.LockReleaseAsync(key, lockToken);
-            }
         }
 
 
@@ -145,23 +120,23 @@ namespace StateStores.Redis
 
         #region  Implementation of IStateStore
 
-        public async Task<StateStoreResult> AddAsync<T>(string key, string token, T next)
+        public async Task<StateStoreResult> AddAsync<T>(string key, T next)
         {
-            var res = await UseLockAsync(key, db => AddInternalAsync(db, key, token, next));
+            var res = await AddInternalAsync(GetDatabase(), key, next);
             if (res is StateStoreResult.Ok) await NotifyObserversAsync<T>();
             return res;
         }
 
-        public async Task<StateStoreResult> UpdateAsync<T>(string key, string token, T current, T next)
+        public async Task<StateStoreResult> UpdateAsync<T>(string key, T current, T next)
         {
-            var res = await UseLockAsync(key, db => UpdateInternalAsync(db, key, token, current, next));
+            var res = await UpdateInternalAsync(GetDatabase(), key, current, next);
             if (res is StateStoreResult.Ok) await NotifyObserversAsync<T>();
             return res;
         }
 
-        public async Task<StateStoreResult> RemoveAsync<T>(string key, string token, T current)
+        public async Task<StateStoreResult> RemoveAsync<T>(string key, T current)
         {
-            var res = await UseLockAsync(key, db => RemoveInternalAsync(db, key, token, current));
+            var res = await RemoveInternalAsync(GetDatabase(), key, current);
             if (res is StateStoreResult.Ok) await NotifyObserversAsync<T>();
             return res;
         }
@@ -172,42 +147,16 @@ namespace StateStores.Redis
 
             return GetObservable(GetChannelName<T>()).Select(_ =>
                 db.SetMembers(GetKeysSetName<T>()).ToImmutableDictionary(m =>
-                    m.ToString(), m => TokenStatePair<T>.FromRedisValue(db.StringGet(m.ToString())).State));
+                    m.ToString(), m => RedisValueToState<T>(db.StringGet(m.ToString()))));
         }
 
         #endregion
 
 
-        #region  Private Types
+        private static RedisValue StateToRedisValue<T>(T value) =>
+            JsonConvert.SerializeObject(value);
 
-        private static class TokenStatePair
-        {
-            public static TokenStatePair<T> Create<T>(string token, T state) =>
-                new TokenStatePair<T>(token, state);
-        }
-
-        private class TokenStatePair<TState>
-        {
-            public TokenStatePair(string token, TState state)
-            {
-                Token = token;
-                State = state;
-            }
-            public string Token { get; }
-            public TState State { get; }
-
-            public RedisValue ToRedisValue() =>
-                JsonConvert.SerializeObject(this);
-
-            public static TokenStatePair<TState> FromRedisValue(RedisValue value)
-            {
-                var val = value.ToString();
-                return JsonConvert.DeserializeObject<TokenStatePair<TState>>(val);
-            }
-        }
-
-        #endregion
-
-
+        private static T RedisValueToState<T>(RedisValue value) =>
+            JsonConvert.DeserializeObject<T>(value);
     }
 }
