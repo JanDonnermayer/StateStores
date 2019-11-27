@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System;
 using NUnit.Framework;
 using System.Reactive.Linq;
+using StateStores.InMemory;
 
 namespace StateStores.Test
 {

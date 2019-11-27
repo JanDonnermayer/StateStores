@@ -14,7 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\StateStores.Redis\StateStores.Redis.csproj" />
     <ProjectReference Include="..\..\src\StateStores\StateStores.csproj" />
+    <ProjectReference Include="..\..\src\StateStores.InMemory\StateStores.InMemory.csproj" />
   </ItemGroup>
 
 </Project>

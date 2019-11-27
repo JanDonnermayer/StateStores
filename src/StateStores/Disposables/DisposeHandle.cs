@@ -7,7 +7,7 @@ namespace System
     /// <summary>
     /// Provides helper methods for <see cref="IDisposable"/> implementations.
     /// </summary>
-    public class DisposeHandle<TOwner> : IDisposable
+    public sealed class DisposeHandle<TOwner> : IDisposable
         where TOwner : class
     {
         private int _disposed;

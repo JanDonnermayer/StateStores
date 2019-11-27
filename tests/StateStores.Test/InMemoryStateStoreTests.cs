@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
+using StateStores.InMemory;
 
 namespace StateStores.Test
 {
@@ -7,7 +8,7 @@ namespace StateStores.Test
     [TestFixture]
     public class InMemoryStateStoreTests 
     {
-        private InMemoryStateStore GetStateStore() =>
+        private static InMemoryStateStore GetStateStore() =>
             new InMemoryStateStore();
 
         [Test]

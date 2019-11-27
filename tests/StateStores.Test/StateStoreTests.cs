@@ -18,13 +18,14 @@ namespace StateStores.Test
         static void AssertTokenError(StateStoreResult result) =>
             Assert.IsInstanceOf(typeof(StateStoreResult.TokenError), result);
 
-        public static async Task TestBasicFunctionality(this IStateStore store, 
+        public static async Task TestBasicFunctionality(this IStateStore store,
             string key = "key")
         {
             const string TOKEN_1 = "token1";
             const string TOKEN_2 = "token2";
             const string STATE_1 = "state1";
             const string STATE_2 = "state2";
+
 
             AssertOk(await store.AddAsync(key, TOKEN_1, STATE_1));
 
@@ -49,12 +50,16 @@ namespace StateStores.Test
 
         public static async Task TestParallelFunctionality(this IStateStore store)
         {
-            const int PARALLEL_WORKERS_COUNT = 100000;
+            const int PARALLEL_WORKERS_COUNT = 10;
+            const int COUNT = 100;
 
-            await Task.WhenAll(
-                Enumerable
-                    .Range(0, PARALLEL_WORKERS_COUNT)
-                    .Select(i => store.TestBasicFunctionality(i.ToString())));
+            await Task.WhenAll(Enumerable
+                .Range(0, PARALLEL_WORKERS_COUNT)
+                .Select(async i =>
+                {
+                    for (int j = 0; j < COUNT; j++)
+                        await store.TestBasicFunctionality(i.ToString());
+                }));
         }
 
     }

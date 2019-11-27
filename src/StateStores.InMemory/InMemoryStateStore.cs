@@ -1,19 +1,17 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StateStores
+namespace StateStores.InMemory
 {
     public sealed class InMemoryStateStore : IStateStore
     {
 
-        #region  Private Members
+        #region Private Members
 
         private ImmutableDictionary<Type, SemaphoreSlim> mut_semaphoreMap =
             ImmutableDictionary<Type, SemaphoreSlim>.Empty;
@@ -49,12 +47,15 @@ namespace StateStores
             return Disposable.Create(() => sem.Release());
         }
 
+        private void NotifyObservers<T>() =>
+            GetSubject<T>().OnNext(Unit.Default);
+
         #endregion
 
 
         #region  Implementation of IStateStore
 
-        public async Task<StateStoreResult> AddAsync<T>(string key, string token, 
+        public async Task<StateStoreResult> AddAsync<T>(string key, string token,
             T nextState)
         {
             using var _ = await GetLockAsync<T>();
@@ -69,7 +70,7 @@ namespace StateStores
                     key: typeof(TokenStatePair<T>),
                     value: map.SetItem(key, new TokenStatePair<T>(token, nextState))));
 
-            GetSubject<T>().OnNext(Unit.Default);
+            NotifyObservers<T>();
 
             return new StateStoreResult.Ok();
         }
@@ -91,7 +92,7 @@ namespace StateStores
                     key: typeof(TokenStatePair<T>),
                     value: map.SetItem(key, new TokenStatePair<T>(token, nextState))));
 
-            GetSubject<T>().OnNext(Unit.Default);
+            NotifyObservers<T>();
 
             return new StateStoreResult.Ok();
         }
@@ -114,7 +115,7 @@ namespace StateStores
                     key: typeof(TokenStatePair<T>),
                     value: map.Remove(key)));
 
-            GetSubject<T>().OnNext(Unit.Default);
+            NotifyObservers<T>();
 
             return new StateStoreResult.Ok();
         }
