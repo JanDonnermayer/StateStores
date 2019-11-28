@@ -2,7 +2,7 @@
 
 Provides a simple interface for observing and modifying state.
 
-![](https://github.com/JanDonnermayer/StateStores/workflows/dotnetcore/badge.svg)
+[![Actions Status](https://github.com/JanDonnermayer/StateStores/workflows/UnitTest/badge.svg)](https://github.com/JanDonnermayer/StateStores/actions)
 
 ## Usage
 
