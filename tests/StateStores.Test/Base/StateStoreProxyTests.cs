@@ -14,10 +14,14 @@ namespace StateStores.Test
         static void AssertOk(StateStoreResult result) =>
             Assert.IsInstanceOf(typeof(StateStoreResult.Ok), result);
 
-        public static async Task TestBasicFunctionalityAsync(this IStateStoreProxy<int> proxy)
+        public enum SampleStates { state1, state2 }
+
+        public static async Task TestBasicFunctionalityAsync(this IStateStoreProxy<SampleStates> proxy)
         {
-            const int SAMPLE_STATE_1 = 0;
-            const int SAMPLE_STATE_2 = 1;
+
+
+            const SampleStates SAMPLE_STATE_1 = SampleStates.state1;
+            const SampleStates SAMPLE_STATE_2 = SampleStates.state2;
 
             const int EXPECTED_UPDATE_NOTIFICATION_COUNT = 1;
             const int EXPECTED_ADD_NOTIFICATION_COUNT = 1;
@@ -28,7 +32,7 @@ namespace StateStores.Test
             int mut_ActualAddNotificationCount = 0;
             int mut_ActualUpdateNotificationCount = 0;
             int mut_ActualRemoveNotificationCount = 0;
-   
+
             proxy.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
             proxy.OnUpdate.Subscribe(_ => mut_ActualUpdateNotificationCount += 1);
             proxy.OnRemove.Subscribe(_ => mut_ActualRemoveNotificationCount += 1);
@@ -59,9 +63,8 @@ namespace StateStores.Test
         }
 
         // This is a state-transition-chain where observers invoke transitions.
-        public static async Task TestReactiveFunctionalityAsync(this IStateStoreProxy<int> proxy)
+        public static async Task TestReactiveFunctionalityAsync(this IStateStoreProxy<int> proxy, int stateCount)
         {
-            const int STATE_COUNT = 100;
 
             proxy.OnAdd
                 .Subscribe(i =>
@@ -74,8 +77,8 @@ namespace StateStores.Test
                 .Select(_ => _.currentState)
                 .Subscribe(i =>
                 {
-                    if (i < STATE_COUNT)
-                    {   // redundant state updates are rejected
+                    if (i < stateCount)
+                    {
                         proxy.UpdateAsync(i, i + 1);
                     }
                     else
@@ -93,7 +96,7 @@ namespace StateStores.Test
 
             var finalStateCountActual = await tcsFinal.Task;
 
-            Assert.AreEqual(STATE_COUNT, finalStateCountActual);
+            Assert.AreEqual(stateCount, finalStateCountActual);
         }
 
 

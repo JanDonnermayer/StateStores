@@ -10,8 +10,8 @@ namespace StateStores.Test
     [TestFixture]
     public class RedisStateStoreTests 
     {
-        //const string SERVER = "linux-genet01:7001";
-        const string SERVER = @"localhost:32769";
+        const string SERVER = "linux-genet01:7001";
+        // const string SERVER = @"localhost:32769";
 
         private static RedisStateStore GetStateStore() =>
             new RedisStateStore(SERVER);
@@ -41,7 +41,10 @@ namespace StateStores.Test
         public async Task TestParallelFunctionalityAsync()
         {
             using var store = GetStateStore();
-            await store.TestParallelFunctionalityAsync();
+            await store.TestParallelFunctionalityAsync(
+                parallelWorkersCount: 1,
+                transactionsBlockCount: 10000
+            );
         }
     }
 }

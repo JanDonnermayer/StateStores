@@ -39,16 +39,15 @@ namespace StateStores.Test
             AssertError(await store.RemoveAsync(key, STATE_1));
         }
 
-        public static async Task TestParallelFunctionalityAsync(this IStateStore store)
+        public static async Task TestParallelFunctionalityAsync(
+            this IStateStore store, int parallelWorkersCount = 1, int transactionsBlockCount = 1000)
         {
-            const int PARALLEL_WORKERS_COUNT = 1;
-            const int COUNT = 1000;
 
             await Task.WhenAll(Enumerable
-                .Range(0, PARALLEL_WORKERS_COUNT)
+                .Range(0, parallelWorkersCount)
                 .Select(async i =>
                 {
-                    for (int j = 0; j < COUNT; j++)
+                    for (int j = 0; j < transactionsBlockCount; j++)
                         await TestBasicFunctionalityAsync(store, i.ToString());
                 }));
         }
