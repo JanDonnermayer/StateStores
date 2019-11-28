@@ -12,7 +12,7 @@ Provides a simple interface for observing and modifying state.
     enum SampleStates { state1, state2 };
 
     // ...
-     
+
     var proxy = new RedisStateStore(SERVER).CreateProxy<SampleStates>(KEY);
 
     await proxy.AddAsync(SampleStates.state1);
@@ -21,5 +21,3 @@ Provides a simple interface for observing and modifying state.
 
     await proxy.RemoveAsync(SampleStates.state2);
 ```
-
-

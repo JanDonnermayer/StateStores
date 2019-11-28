@@ -44,20 +44,36 @@
             "type": "process",
             "args": [
                 "test",
-                "${workspaceFolder}/test/DocumentStores.Test/DocumentStores.Test.csproj",
+                "${workspaceFolder}/tests/StateStores.Test/StateStores.Test.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "pack.arrk",
+            "label": "pack.redis.arrk",
             "command": "dotnet",
             "type": "process",
             "dependsOn": "test",
             "args": [
                 "pack",
-                "${workspaceFolder}/src/DocumentStores/StateStores.csproj",
+                "${workspaceFolder}/src/StateStores.Redis/StateStores.Redis.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary",
+                "-c:Release",
+                "-p:PackageVersion=${input:packageVersion}",
+                "-o://mucfs/project/TOOLS/Mupe/Private/Development/.NuGet"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "pack.inmemory.arrk",
+            "command": "dotnet",
+            "type": "process",
+            "dependsOn": "test",
+            "args": [
+                "pack",
+                "${workspaceFolder}/src/StateStores.InMemory/StateStores.InMemory.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary",
                 "-c:Release",
