@@ -20,6 +20,7 @@ namespace StateStores.Test
         {
             var _redis = ConnectionMultiplexer.Connect(server + ",allowAdmin=true");
             _redis.GetServer(server).FlushAllDatabases();
+            _redis.Dispose();
         }
 
         [SetUp]

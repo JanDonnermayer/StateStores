@@ -13,7 +13,7 @@ using System.Collections.Generic;
 
 namespace StateStores.Redis
 {
-    public class RedisStateStore : IStateStore
+    public class RedisStateStore : IStateStore, IDisposable
     {
 
         #region Private Members
@@ -177,6 +177,14 @@ namespace StateStores.Redis
 
         #endregion
 
+        #region  IDisposable
 
+        void IDisposable.Dispose()
+        {
+            if (lazy_redis.IsValueCreated) 
+                lazy_redis.Value.Dispose();
+        }
+
+        #endregion
     }
 }
