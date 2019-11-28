@@ -15,7 +15,7 @@ namespace StateStores.Test
         static void AssertError(StateStoreResult result) =>
             Assert.IsInstanceOf(typeof(StateStoreResult.Error), result);
 
-        protected virtual async Task TestBasicFunctionalityAsync(IStateStore store,
+        protected static async Task TestBasicFunctionalityAsync(IStateStore store,
             string key = "keylel")
         {
 
@@ -40,7 +40,7 @@ namespace StateStores.Test
             AssertError(await store.RemoveAsync(key, STATE_1));
         }
 
-        protected virtual async Task TestParallelFunctionalityAsync(IStateStore store)
+        protected static async Task TestParallelFunctionalityAsync(IStateStore store)
         {
             const int PARALLEL_WORKERS_COUNT = 3;
             const int COUNT = 100;

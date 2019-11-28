@@ -14,7 +14,7 @@ namespace StateStores.Test
         static void AssertOk(StateStoreResult result) =>
             Assert.IsInstanceOf(typeof(StateStoreResult.Ok), result);
 
-        protected virtual async Task BasicFunctionality(IStateStore store)
+        protected static async Task TestBasicFunctionalityAsync(IStateStore store)
         {
             const string KEY = "key";
 
@@ -63,7 +63,7 @@ namespace StateStores.Test
         }
 
         // This is a state-transition-chain where observers invoke transitions.
-        protected virtual async Task ReactiveFunctionality(IStateStore store)
+        protected static async Task TestReactiveFunctionalityAsync(IStateStore store)
         {
             const string KEY = "key";
             const int STATE_COUNT = 100;

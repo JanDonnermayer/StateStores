@@ -17,7 +17,7 @@ namespace StateStores.Test
 
         private static void FlushAllDatabases(string server)
         {
-            var _redis = ConnectionMultiplexer.Connect(server + ",allowAdmin=true");
+            using var _redis = ConnectionMultiplexer.Connect(server + ",allowAdmin=true");
             _redis.GetServer(server).FlushAllDatabases();
         }
 
@@ -35,11 +35,17 @@ namespace StateStores.Test
         }
 
         [Test]
-        public Task BasicFunctionality() =>
-            BasicFunctionality(GetStateStore());
+        public async Task TestBasicFunctionalityAsync()
+        {
+            using var store = GetStateStore();
+            await TestBasicFunctionalityAsync(store);
+        }
 
         [Test]
-        public Task ReactiveFunctionality() =>
-            ReactiveFunctionality(GetStateStore());
+        public async Task TestReactiveFunctionalityAsync()
+        {
+            using var store = GetStateStore();
+            await TestReactiveFunctionalityAsync();
+        }
     }
 }

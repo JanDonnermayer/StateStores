@@ -12,11 +12,11 @@ namespace StateStores.Test
             new InMemoryStateStore();
 
         [Test]
-        public Task BasicFunctionality() => 
+        public Task TestBasicFunctionalityAsync() => 
             TestBasicFunctionalityAsync(GetStateStore()); 
 
         [Test]
-        public Task ParallelFunctionality() => 
+        public Task TestParallelFunctionalityAsync() => 
             TestParallelFunctionalityAsync(GetStateStore()); 
 
     }
