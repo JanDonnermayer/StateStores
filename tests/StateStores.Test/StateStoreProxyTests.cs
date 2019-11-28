@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System;
 using NUnit.Framework;
 using System.Reactive.Linq;
+using System.Collections.Generic;
 
 namespace StateStores.Test
 {
@@ -63,37 +64,39 @@ namespace StateStores.Test
         public static async Task TestReactiveFunctionalityAsync(this IStateStoreProxy<int> proxy, int stateCount)
         {
 
-            proxy.OnAdd
-                .Subscribe(i =>
-                {
-                    proxy.UpdateAsync(i, i++);
-                });
+            var mut_actualStateHistory = new List<int>();
+            var exptectedStateHistory = Enumerable.Range(0, stateCount);
 
+            bool ShouldProceed(int i) => (i < stateCount);
 
-            proxy.OnUpdate
-                .Select(_ => _.currentState)
-                .Subscribe(i =>
-                {
-                    if (i < stateCount)
-                    {
-                        proxy.UpdateAsync(i, i + 1);
-                    }
-                    else
-                    {
-                        proxy.RemoveAsync(i);
-                    }
-                });
+            bool ShouldStop(int i) => !ShouldProceed(i);
 
+            void LogState(int i) => mut_actualStateHistory.Add(i);
 
+            var tcsStop = new TaskCompletionSource<int>();
 
-            var tcsFinal = new TaskCompletionSource<int>();
-            proxy.OnRemove.Subscribe(tcsFinal.SetResult);
+            proxy
+                .OnNext(ShouldProceed) 
+                .Do(i => proxy.UpdateAsync(i, i + 1))
+                .Do(LogState)
+                .Subscribe();
 
-            AssertOk(await proxy.AddAsync(0));
+            proxy
+                .OnNext(ShouldStop)
+                .Do(i => proxy.RemoveAsync(i))
+                .Subscribe(tcsStop.SetResult);           
 
-            var finalStateCountActual = await tcsFinal.Task;
+            const int INITIAL_STATE = 0;
+            AssertOk(await proxy.AddAsync(INITIAL_STATE));
 
-            Assert.AreEqual(stateCount, finalStateCountActual);
+            var finalState = await tcsStop.Task;
+
+            Assert.IsTrue(
+                condition: Enumerable.SequenceEqual(
+                    exptectedStateHistory,
+                    mut_actualStateHistory),
+                message: "Incorrect state history!"
+            );
         }
 
 

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using StateStores.InMemory;
 using StateStores.Test;
@@ -14,7 +15,7 @@ namespace StateStores.InMemory.Test
 
         [Test]
         public Task TestBasicFunctionalityAsync() => 
-            GetStateStore().TestBasicFunctionalityAsync("test_key_1"); 
+            GetStateStore().TestBasicFunctionalityAsync(key: Guid.NewGuid().ToString()); 
 
         [Test]
         public Task TestParallelFunctionalityAsync() => 

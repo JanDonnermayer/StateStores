@@ -8,16 +8,25 @@ Provides a simple interface for observing and modifying state.
 ## Usage
 
 ```csharp
+    using System.Reactive.Linq;
+    using StateStores.Redis;
 
-    enum SampleStates { state1, state2 };
+    enum States { S1, S2 };
 
     // ...
 
-    var proxy = new RedisStateStore(SERVER).CreateProxy<SampleStates>(KEY);
+    var proxy = new RedisStateStore(SERVER).CreateProxy<States>(KEY);
 
-    await proxy.AddAsync(SampleStates.state1);
+    // Reactive-transit: S1 --> S2
+    proxy
+        .OnNext(States.S1.Equals)
+        .Subscribe(state => proxy.UpdateAsync(state, States.S2));
 
-    await proxy.UpdateAsync(SampleStates.state1, SampleStates.state2);
+    // Reactive-transit: S2 --> {0}
+    proxy
+        .OnNext(States.S2.Equals)
+        .Subscribe(state => proxy.RemoveAsync(state));
 
-    await proxy.RemoveAsync(SampleStates.state2);
+    // Imperative-transit: {0} --> S1
+    await proxy.AddAsync(States.S1);
 ```

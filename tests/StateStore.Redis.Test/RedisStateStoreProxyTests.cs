@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using StackExchange.Redis;
@@ -17,8 +18,8 @@ namespace StateStores.Redis.Test
         {
             using var store = RedisStateStoreFactory.GetStateStore();
             await store
-                .CreateProxy<int>("test2")
-                .TestReactiveFunctionalityAsync(stateCount: 100);
+                .CreateProxy<int>(key: Guid.NewGuid().ToString())
+                .TestReactiveFunctionalityAsync(stateCount: 1000);
         }
     }
 }
