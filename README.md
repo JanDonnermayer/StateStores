@@ -2,6 +2,8 @@
 
 Provides a simple interface for observing and modifying state.
 
+![](https://github.com/JanDonnermayer/StateStores/workflows/dotnetcore/badge.svg)
+
 ## Usage
 
 ```csharp
@@ -18,3 +20,5 @@ Provides a simple interface for observing and modifying state.
 
     await proxy.RemoveAsync(SampleStates.state2);
 ```
+
+
