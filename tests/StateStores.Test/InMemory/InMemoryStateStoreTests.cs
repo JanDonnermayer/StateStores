@@ -13,7 +13,7 @@ namespace StateStores.Test
 
         [Test]
         public Task TestBasicFunctionalityAsync() => 
-            GetStateStore().TestBasicFunctionalityAsync(); 
+            GetStateStore().TestBasicFunctionalityAsync("test_key_1"); 
 
         [Test]
         public Task TestParallelFunctionalityAsync() => 

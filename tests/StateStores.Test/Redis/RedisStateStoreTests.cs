@@ -36,12 +36,6 @@ namespace StateStores.Test
             }
         }
 
-        [Test]
-        public async Task TestBasicFunctionalityAsync()
-        {
-            using var store = GetStateStore();
-            await store.TestBasicFunctionalityAsync();
-        }
 
         [Test]
         public async Task TestParallelFunctionalityAsync()

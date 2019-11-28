@@ -35,13 +35,6 @@ namespace StateStores.Test
         }
 
         [Test]
-        public async Task TestBasicFunctionalityAsync()
-        {
-            using var store = GetStateStore();
-            await store.CreateProxy<int>("test1").TestBasicFunctionalityAsync();
-        }
-
-        [Test]
         public async Task TestReactiveFunctionalityAsync()
         {
             using var store = GetStateStore();
