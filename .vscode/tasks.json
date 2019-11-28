@@ -39,12 +39,24 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "test",
+            "label": "test.redis",
             "command": "dotnet",
             "type": "process",
             "args": [
                 "test",
-                "${workspaceFolder}/tests/StateStores.Test/StateStores.Test.csproj",
+                "${workspaceFolder}/tests/StateStores.Redis.Test/StateStores.Redis.Test.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "test.inmemory",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "${workspaceFolder}/tests/StateStores.InMemory.Test/StateStores.InMemory.Test.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -54,7 +66,7 @@
             "label": "pack.redis.arrk",
             "command": "dotnet",
             "type": "process",
-            "dependsOn": "test",
+            "dependsOn": "test.redis",
             "args": [
                 "pack",
                 "${workspaceFolder}/src/StateStores.Redis/StateStores.Redis.csproj",
@@ -70,7 +82,7 @@
             "label": "pack.inmemory.arrk",
             "command": "dotnet",
             "type": "process",
-            "dependsOn": "test",
+            "dependsOn": "test.inmemory",
             "args": [
                 "pack",
                 "${workspaceFolder}/src/StateStores.InMemory/StateStores.InMemory.csproj",
@@ -79,6 +91,38 @@
                 "-c:Release",
                 "-p:PackageVersion=${input:packageVersion}",
                 "-o://mucfs/project/TOOLS/Mupe/Private/Development/.NuGet"
+            ],
+            "problemMatcher": "$msCompile"
+        },        
+        {
+            "label": "pack.redis.out",
+            "command": "dotnet",
+            "type": "process",
+            "dependsOn": "test.redis",
+            "args": [
+                "pack",
+                "${workspaceFolder}/src/StateStores.Redis/StateStores.Redis.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary",
+                "-c:Release",
+                "-p:PackageVersion=${input:packageVersion}",
+                "-o:out/redis"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "pack.inmemory.out",
+            "command": "dotnet",
+            "type": "process",
+            "dependsOn": "test.inmemory",
+            "args": [
+                "pack",
+                "${workspaceFolder}/src/StateStores.InMemory/StateStores.InMemory.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary",
+                "-c:Release",
+                "-p:PackageVersion=${input:packageVersion}",
+                "-o:out/inmemory"
             ],
             "problemMatcher": "$msCompile"
         }

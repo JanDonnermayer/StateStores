@@ -15,9 +15,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F3A13433
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateStores.Test", "tests\StateStores.Test\StateStores.Test.csproj", "{61EFEC1E-3312-447C-BA9E-4B896C6A0F50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateStore.InMemory.Test", "tests\StateStore.InMemory.Test\StateStore.InMemory.Test.csproj", "{645CE458-935D-4BA4-8652-217CEDA2804E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateStores.InMemory.Test", "tests\StateStores.InMemory.Test\StateStores.InMemory.Test.csproj", "{645CE458-935D-4BA4-8652-217CEDA2804E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateStore.Redis.Test", "tests\StateStore.Redis.Test\StateStore.Redis.Test.csproj", "{AEB6B1DA-E4E4-43CA-BFF1-BF3C8A44CE75}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateStores.Redis.Test", "tests\StateStores.Redis.Test\StateStores.Redis.Test.csproj", "{AEB6B1DA-E4E4-43CA-BFF1-BF3C8A44CE75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
