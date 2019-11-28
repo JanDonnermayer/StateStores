@@ -41,8 +41,8 @@ namespace StateStores.Test
 
         public static async Task TestParallelFunctionalityAsync(this IStateStore store)
         {
-            const int PARALLEL_WORKERS_COUNT = 3;
-            const int COUNT = 100;
+            const int PARALLEL_WORKERS_COUNT = 1;
+            const int COUNT = 1000;
 
             await Task.WhenAll(Enumerable
                 .Range(0, PARALLEL_WORKERS_COUNT)
