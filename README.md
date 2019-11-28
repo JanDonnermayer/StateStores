@@ -12,9 +12,9 @@ Provides a simple interface for observing and modifying state.
      
     var proxy = new RedisStateStore(SERVER).CreateProxy<SampleStates>(KEY);
 
-    await proxy.AddAsync(sampleStates.state1);
+    await proxy.AddAsync(SampleStates.state1);
 
-    await proxy.UpdateAsync(sampleStates.state1, sampleStates.state2);
+    await proxy.UpdateAsync(SampleStates.state1, SampleStates.state2);
 
-    await proxy.RemoveAsync(sampleStates.state2);
+    await proxy.RemoveAsync(SampleStates.state2);
 ```
