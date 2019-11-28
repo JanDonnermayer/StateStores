@@ -43,7 +43,7 @@ namespace StateStores.Test
             using var store = GetStateStore();
             await store.TestParallelFunctionalityAsync(
                 parallelWorkersCount: 1,
-                transactionsBlockCount: 10000
+                transactionsBlockCount: 100
             );
         }
     }

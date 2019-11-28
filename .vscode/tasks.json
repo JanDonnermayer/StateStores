@@ -37,6 +37,42 @@
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "test",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "${workspaceFolder}/test/DocumentStores.Test/DocumentStores.Test.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "pack.arrk",
+            "command": "dotnet",
+            "type": "process",
+            "dependsOn": "test",
+            "args": [
+                "pack",
+                "${workspaceFolder}/src/DocumentStores/StateStores.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary",
+                "-c:Release",
+                "-p:PackageVersion=${input:packageVersion}",
+                "-o://mucfs/project/TOOLS/Mupe/Private/Development/.NuGet"
+            ],
+            "problemMatcher": "$msCompile"
+        }
+    ],
+    "inputs": [
+        {
+            "type": "promptString",
+            "id": "packageVersion",
+            "description": "Specify package version.",
+            "default": "0.0.0"
         }
     ]
 }

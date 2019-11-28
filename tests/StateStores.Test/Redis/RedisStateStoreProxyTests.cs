@@ -40,7 +40,7 @@ namespace StateStores.Test
             using var store = GetStateStore();
             await store
                 .CreateProxy<int>("test2")
-                .TestReactiveFunctionalityAsync(stateCount: 1000);
+                .TestReactiveFunctionalityAsync(stateCount: 100);
         }
     }
 }
