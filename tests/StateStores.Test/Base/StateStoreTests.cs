@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace StateStores.Test
 {
 
-    public abstract class StateStoreTestsBase
+    public static class StateStoreTests
     {
         static void AssertOk(StateStoreResult result) =>
             Assert.IsInstanceOf(typeof(StateStoreResult.Ok), result);
@@ -15,8 +15,8 @@ namespace StateStores.Test
         static void AssertError(StateStoreResult result) =>
             Assert.IsInstanceOf(typeof(StateStoreResult.Error), result);
 
-        protected static async Task TestBasicFunctionalityAsync(IStateStore store,
-            string key = "keylel")
+        public static async Task TestBasicFunctionalityAsync(this IStateStore store,
+             string key = "keylel")
         {
 
             const string STATE_1 = "state1";
@@ -40,7 +40,7 @@ namespace StateStores.Test
             AssertError(await store.RemoveAsync(key, STATE_1));
         }
 
-        protected static async Task TestParallelFunctionalityAsync(IStateStore store)
+        public static async Task TestParallelFunctionalityAsync(this IStateStore store)
         {
             const int PARALLEL_WORKERS_COUNT = 3;
             const int COUNT = 100;

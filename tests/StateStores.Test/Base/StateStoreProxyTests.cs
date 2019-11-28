@@ -9,15 +9,13 @@ using StateStores.InMemory;
 namespace StateStores.Test
 {
 
-    public abstract class StateStoreProxyTestBase
+    public static class StateStoreProxyTests
     {
         static void AssertOk(StateStoreResult result) =>
             Assert.IsInstanceOf(typeof(StateStoreResult.Ok), result);
 
-        protected static async Task TestBasicFunctionalityAsync(IStateStore store)
+        public static async Task TestBasicFunctionalityAsync(this IStateStoreProxy<int> proxy)
         {
-            const string KEY = "key";
-
             const int SAMPLE_STATE_1 = 0;
             const int SAMPLE_STATE_2 = 1;
 
@@ -30,9 +28,7 @@ namespace StateStores.Test
             int mut_ActualAddNotificationCount = 0;
             int mut_ActualUpdateNotificationCount = 0;
             int mut_ActualRemoveNotificationCount = 0;
-
-            var proxy = store.CreateProxy<int>(KEY);
-
+   
             proxy.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
             proxy.OnUpdate.Subscribe(_ => mut_ActualUpdateNotificationCount += 1);
             proxy.OnRemove.Subscribe(_ => mut_ActualRemoveNotificationCount += 1);
@@ -63,12 +59,9 @@ namespace StateStores.Test
         }
 
         // This is a state-transition-chain where observers invoke transitions.
-        protected static async Task TestReactiveFunctionalityAsync(IStateStore store)
+        public static async Task TestReactiveFunctionalityAsync(this IStateStoreProxy<int> proxy)
         {
-            const string KEY = "key";
             const int STATE_COUNT = 100;
-
-            var proxy = store.CreateProxy<int>(KEY);
 
             proxy.OnAdd
                 .Subscribe(i =>

@@ -8,10 +8,10 @@ using StateStores.Redis;
 namespace StateStores.Test
 {
     [TestFixture]
-    public class RedisStateStoreTests : StateStoreTestsBase
+    public class RedisStateStoreTests 
     {
         //const string SERVER = "linux-genet01:7001";
-        const string SERVER = @"localhost:32768";
+        const string SERVER = @"localhost:32769";
 
         private static RedisStateStore GetStateStore() =>
             new RedisStateStore(SERVER);
@@ -40,14 +40,14 @@ namespace StateStores.Test
         public async Task TestBasicFunctionalityAsync()
         {
             using var store = GetStateStore();
-            await TestBasicFunctionalityAsync(store);
+            await store.TestBasicFunctionalityAsync();
         }
 
         [Test]
         public async Task TestParallelFunctionalityAsync()
         {
             using var store = GetStateStore();
-            await TestParallelFunctionalityAsync(store);
+            await store.TestParallelFunctionalityAsync();
         }
     }
 }
