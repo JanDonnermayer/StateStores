@@ -66,7 +66,7 @@ namespace StateStores.Test
         protected virtual async Task ReactiveFunctionality(IStateStore store)
         {
             const string KEY = "key";
-            const int STATE_COUNT = 1000;
+            const int STATE_COUNT = 100;
 
             var proxy = store.CreateProxy<int>(KEY);
 

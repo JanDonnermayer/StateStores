@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Net.NetworkInformation;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using StackExchange.Redis;
 using StateStores.Redis;
@@ -21,8 +23,17 @@ namespace StateStores.Test
         }
 
         [SetUp]
-        public void Setup() =>
-            FlushAllDatabases(SERVER);
+        public void Setup()
+        {
+            try
+            {
+                FlushAllDatabases(SERVER);
+            }
+            catch (Exception)
+            {
+                Assert.Inconclusive($"Cannot access redis-server at: {SERVER}");
+            }
+        }
 
         [Test]
         public Task BasicFunctionality() =>

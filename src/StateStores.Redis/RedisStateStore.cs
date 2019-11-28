@@ -20,17 +20,20 @@ namespace StateStores.Redis
 
         private readonly string server;
 
-        private readonly Lazy<ConnectionMultiplexer> redis;
+        private readonly Lazy<ConnectionMultiplexer> lazy_redis;
+
+        private readonly Lazy<IDatabase> lazy_database;
+
+        private readonly Lazy<ISubscriber> lazy_subscriber;
 
         private ImmutableDictionary<string, IObservable<RedisValue>> mut_ObserverDict =
             ImmutableDictionary<string, IObservable<RedisValue>>.Empty;
 
-
         private IDatabase GetDatabase() =>
-            redis.Value.GetDatabase();
+            lazy_database.Value;
 
         private ISubscriber GetSubscriber() =>
-            redis.Value.GetSubscriber();
+            lazy_subscriber.Value;
 
         private static string GetChannelName<TState>() =>
            "udpdate_channel_" + typeof(TState).FullName;
@@ -48,7 +51,7 @@ namespace StateStores.Redis
             IObservable<RedisValue> _GetObservable(string channel) =>
                 Observable.Create<RedisValue>(o =>
                 {
-                    var subscriber = redis.Value.GetSubscriber();
+                    var subscriber = lazy_redis.Value.GetSubscriber();
                     void handler(RedisChannel c, RedisValue m) => o.OnNext(m);
                     subscriber.Subscribe(channel, handler);
                     return Disposable.Create(() => subscriber.Unsubscribe(channel, handler));
@@ -61,6 +64,18 @@ namespace StateStores.Redis
             );
         }
 
+        static IImmutableDictionary<string, T> DictionaryFromValues<T>(RedisValue[] values) =>
+           values.Select(FromRedisValue<KeyValuePair<string, T>>).ToImmutableDictionary();
+
+        private static RedisValue ToRedisValue<T>(T value) =>
+            JsonConvert.SerializeObject(value);
+
+        private static T FromRedisValue<T>(RedisValue value) =>
+            value.IsNullOrEmpty switch
+            {
+                false => JsonConvert.DeserializeObject<T>(value),
+                true => default
+            };
 
         #endregion
 
@@ -70,7 +85,9 @@ namespace StateStores.Redis
         public RedisStateStore(string server)
         {
             this.server = server ?? throw new ArgumentNullException(nameof(server));
-            this.redis = new Lazy<ConnectionMultiplexer>(() => ConnectionMultiplexer.Connect(this.server));
+            this.lazy_redis = new Lazy<ConnectionMultiplexer>(() => ConnectionMultiplexer.Connect(this.server));
+            this.lazy_database = new Lazy<IDatabase>(lazy_redis.Value.GetDatabase());
+            this.lazy_subscriber = new Lazy<ISubscriber>(lazy_redis.Value.GetSubscriber());
         }
 
         #endregion
@@ -116,7 +133,7 @@ namespace StateStores.Redis
 
             if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
 
-            await database.SetRemoveAsync(GetSetName<T>(), ToRedisValue(new KeyValuePair<string, T>(key, current)));
+             await database.SetRemoveAsync(GetSetName<T>(), ToRedisValue(new KeyValuePair<string, T>(key, current)));
 
             return new StateStoreResult.Ok();
         }
@@ -130,50 +147,35 @@ namespace StateStores.Redis
         public async Task<StateStoreResult> AddAsync<T>(string key, T next)
         {
             var res = await AddInternalAsync(GetDatabase(), key, next);
-            if (res is StateStoreResult.Ok) await NotifyObserversAsync<T>();
+            if (res is StateStoreResult.Ok) _ = NotifyObserversAsync<T>();
             return res;
         }
 
         public async Task<StateStoreResult> UpdateAsync<T>(string key, T current, T next)
         {
             var res = await UpdateInternalAsync(GetDatabase(), key, current, next);
-            if (res is StateStoreResult.Ok) await NotifyObserversAsync<T>();
+            if (res is StateStoreResult.Ok) _ = NotifyObserversAsync<T>();
             return res;
         }
 
         public async Task<StateStoreResult> RemoveAsync<T>(string key, T current)
         {
             var res = await RemoveInternalAsync(GetDatabase(), key, current);
-            if (res is StateStoreResult.Ok) await NotifyObserversAsync<T>();
+            if (res is StateStoreResult.Ok) _ = NotifyObserversAsync<T>();
             return res;
         }
 
-        public IObservable<IImmutableDictionary<string, T>> GetObservable<T>()
-        {
-            return GetObservable(GetChannelName<T>())
-                .Select(_ => Observable.FromAsync(async () =>      
+        public IObservable<IImmutableDictionary<string, T>> GetObservable<T>() => 
+            GetObservable(GetChannelName<T>())
+                .Select(_ => Observable.FromAsync(async () =>
                    DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>()))))
                 .Concat()
                 .Merge(Observable.FromAsync(async () =>
                    DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>()))))
                 .Replay(1)
                 .RefCount();
-        }
 
         #endregion
-
-        static IImmutableDictionary<string, T> DictionaryFromValues<T>(RedisValue[] values) =>
-           values.Select(FromRedisValue<KeyValuePair<string, T>>).ToImmutableDictionary();
-
-        private static RedisValue ToRedisValue<T>(T value) =>
-            JsonConvert.SerializeObject(value);
-
-        private static T FromRedisValue<T>(RedisValue value) =>
-            value.IsNullOrEmpty switch
-            {
-                false => JsonConvert.DeserializeObject<T>(value),
-                true => default
-            };
 
 
     }

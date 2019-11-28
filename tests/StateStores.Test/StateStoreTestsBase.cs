@@ -42,7 +42,7 @@ namespace StateStores.Test
 
         protected virtual async Task TestParallelFunctionality(IStateStore store)
         {
-            const int PARALLEL_WORKERS_COUNT = 10;
+            const int PARALLEL_WORKERS_COUNT = 3;
             const int COUNT = 100;
 
             await Task.WhenAll(Enumerable
