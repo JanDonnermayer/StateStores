@@ -37,11 +37,17 @@ namespace StateStores.Test
         }
 
         [Test]
-        public Task BasicFunctionality() =>
-            TestBasicFunctionality(GetStateStore());
+        public async Task TestBasicFunctionalityAsync()
+        {
+            using var store = GetStateStore();
+            await TestBasicFunctionalityAsync(store);
+        }
 
         [Test]
-        public Task ParallelFunctionality() =>
-            TestParallelFunctionality(GetStateStore());
+        public async Task TestParallelFunctionalityAsync()
+        {
+            using var store = GetStateStore();
+            await TestParallelFunctionalityAsync(store);
+        }
     }
 }

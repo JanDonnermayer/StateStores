@@ -13,11 +13,11 @@ namespace StateStores.Test
 
         [Test]
         public Task BasicFunctionality() => 
-            TestBasicFunctionality(GetStateStore()); 
+            TestBasicFunctionalityAsync(GetStateStore()); 
 
         [Test]
         public Task ParallelFunctionality() => 
-            TestParallelFunctionality(GetStateStore()); 
+            TestParallelFunctionalityAsync(GetStateStore()); 
 
     }
 }

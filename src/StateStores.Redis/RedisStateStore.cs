@@ -133,7 +133,7 @@ namespace StateStores.Redis
 
             if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
 
-             await database.SetRemoveAsync(GetSetName<T>(), ToRedisValue(new KeyValuePair<string, T>(key, current)));
+            await database.SetRemoveAsync(GetSetName<T>(), ToRedisValue(new KeyValuePair<string, T>(key, current)));
 
             return new StateStoreResult.Ok();
         }
@@ -165,7 +165,7 @@ namespace StateStores.Redis
             return res;
         }
 
-        public IObservable<IImmutableDictionary<string, T>> GetObservable<T>() => 
+        public IObservable<IImmutableDictionary<string, T>> GetObservable<T>() =>
             GetObservable(GetChannelName<T>())
                 .Select(_ => Observable.FromAsync(async () =>
                    DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>()))))
@@ -179,9 +179,9 @@ namespace StateStores.Redis
 
         #region  IDisposable
 
-        void IDisposable.Dispose()
+        public void Dispose()
         {
-            if (lazy_redis.IsValueCreated) 
+            if (lazy_redis.IsValueCreated)
                 lazy_redis.Value.Dispose();
         }
 
