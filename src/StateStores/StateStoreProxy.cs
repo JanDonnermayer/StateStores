@@ -37,14 +37,14 @@ namespace StateStores
                 );
             }
 
-            async Task<StateStoreResult> IStateStoreProxy<TState>.AddAsync(TState nextState) =>
-                await store.AddAsync(key, nextState).ConfigureAwait(false);
+            public async Task<StateStoreResult> AddAsync(TState nextState) =>
+                  await store.AddAsync(key, nextState).ConfigureAwait(false);
 
-            async Task<StateStoreResult> IStateStoreProxy<TState>.RemoveAsync(TState currentState) =>
-                await store.RemoveAsync(key, currentState).ConfigureAwait(false);
+            public async Task<StateStoreResult> RemoveAsync(TState currentState) =>
+                  await store.RemoveAsync(key, currentState).ConfigureAwait(false);
 
-            async Task<StateStoreResult> IStateStoreProxy<TState>.UpdateAsync(TState currentState, TState nextState) =>
-                await store.UpdateAsync(key, currentState, nextState).ConfigureAwait(false);
+            public async Task<StateStoreResult> UpdateAsync(TState currentState, TState nextState) =>
+                 await store.UpdateAsync(key, currentState, nextState).ConfigureAwait(false);
 
             public IObservable<TState> OnAdd =>
                 GetObservable()

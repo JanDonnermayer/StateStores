@@ -1,14 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System;
 using NUnit.Framework;
 using System.Reactive.Linq;
-using StateStores.InMemory;
 
 namespace StateStores.Test
 {
-
     public static class StateStoreProxyTests
     {
         static void AssertOk(StateStoreResult result) =>

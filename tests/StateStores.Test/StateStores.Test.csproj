@@ -7,16 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="moq" Version="4.13.1" />
     <PackageReference Include="nunit" Version="3.12.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\StateStores.Redis\StateStores.Redis.csproj" />
     <ProjectReference Include="..\..\src\StateStores\StateStores.csproj" />
-    <ProjectReference Include="..\..\src\StateStores.InMemory\StateStores.InMemory.csproj" />
   </ItemGroup>
 
 </Project>

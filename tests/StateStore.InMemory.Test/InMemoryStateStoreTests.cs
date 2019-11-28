@@ -1,8 +1,9 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
 using StateStores.InMemory;
+using StateStores.Test;
 
-namespace StateStores.Test
+namespace StateStores.InMemory.Test
 {
 
     [TestFixture]
