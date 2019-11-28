@@ -3,7 +3,7 @@
 [![](https://github.com/JanDonnermayer/StateStores/workflows/UnitTests/badge.svg)](
 https://github.com/JanDonnermayer/StateStores/actions)
 
-Provides a simple interface for observing and modifying state.
+Provides a simple interface for observing and modifying state atomically.
 
 ## Usage
 
