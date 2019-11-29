@@ -13,7 +13,7 @@ using System.Collections.Generic;
 
 namespace StateStores.Redis
 {
-    public class RedisStateStore : IStateStore, IDisposable
+    public sealed class RedisStateStore : IStateStore, IDisposable
     {
 
         #region Private Members
