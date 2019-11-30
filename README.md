@@ -33,8 +33,9 @@ proxy
 // Imperative-transit: {0} --> S1
 await proxy.AddAsync(States.S1);
 ```
+
 ## Dotnet CLI
 
 ```powershell
-dotnet add package StateStores.Redis 
+dotnet add package StateStores.Redis
 ```
