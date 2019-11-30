@@ -74,6 +74,7 @@
                 "/consoleloggerparameters:NoSummary",
                 "-c:Release",
                 "-p:PackageVersion=${input:packageVersion}",
+                "-p:AssemblyVersion=${input:packageVersion}",
                 "-o://mucfs/project/TOOLS/Mupe/Private/Development/.NuGet"
             ],
             "problemMatcher": "$msCompile"
@@ -90,7 +91,24 @@
                 "/consoleloggerparameters:NoSummary",
                 "-c:Release",
                 "-p:PackageVersion=${input:packageVersion}",
+                "-p:AssemblyVersion=${input:packageVersion}",
                 "-o://mucfs/project/TOOLS/Mupe/Private/Development/.NuGet"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "pack.out",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "pack",
+                "${workspaceFolder}/src/StateStores/StateStores.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary",
+                "-c:Release",
+                "-p:PackageVersion=${input:packageVersion}",
+                "-p:AssemblyVersion=${input:packageVersion}",
+                "-o:out"
             ],
             "problemMatcher": "$msCompile"
         },        
@@ -106,6 +124,7 @@
                 "/consoleloggerparameters:NoSummary",
                 "-c:Release",
                 "-p:PackageVersion=${input:packageVersion}",
+                "-p:AssemblyVersion=${input:packageVersion}",
                 "-o:out/redis"
             ],
             "problemMatcher": "$msCompile"
@@ -122,6 +141,7 @@
                 "/consoleloggerparameters:NoSummary",
                 "-c:Release",
                 "-p:PackageVersion=${input:packageVersion}",
+                "-p:AssemblyVersion=${input:packageVersion}",
                 "-o:out/inmemory"
             ],
             "problemMatcher": "$msCompile"
