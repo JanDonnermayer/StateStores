@@ -33,7 +33,7 @@ namespace StateStores
                 this.key = key ?? throw new ArgumentNullException(nameof(key));
 
                 this.lazyStateObervable = new Lazy<IObservable<IImmutableDictionary<string, TState>>>(
-                    store.GetObservable<TState>()
+                    store.GetObservable<TState>
                 );
             }
 

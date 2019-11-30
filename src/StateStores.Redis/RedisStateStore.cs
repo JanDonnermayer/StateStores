@@ -86,8 +86,8 @@ namespace StateStores.Redis
         {
             this.server = server ?? throw new ArgumentNullException(nameof(server));
             this.lazy_redis = new Lazy<ConnectionMultiplexer>(() => ConnectionMultiplexer.Connect(this.server));
-            this.lazy_database = new Lazy<IDatabase>(lazy_redis.Value.GetDatabase());
-            this.lazy_subscriber = new Lazy<ISubscriber>(lazy_redis.Value.GetSubscriber());
+            this.lazy_database = new Lazy<IDatabase>(() => lazy_redis.Value.GetDatabase());
+            this.lazy_subscriber = new Lazy<ISubscriber>(() => lazy_redis.Value.GetSubscriber());
         }
 
         #endregion

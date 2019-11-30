@@ -97,7 +97,7 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "pack.out",
+            "label": "pack.local",
             "command": "dotnet",
             "type": "process",
             "args": [
@@ -108,12 +108,12 @@
                 "-c:Release",
                 "-p:PackageVersion=${input:packageVersion}",
                 "-p:AssemblyVersion=${input:packageVersion}",
-                "-o:out"
+                "-o:C:/Users/${env:USERNAME}/.nuget/packages.local/StateStores"
             ],
             "problemMatcher": "$msCompile"
         },        
         {
-            "label": "pack.redis.out",
+            "label": "pack.redis.local",
             "command": "dotnet",
             "type": "process",
             "dependsOn": "test.redis",
@@ -125,12 +125,12 @@
                 "-c:Release",
                 "-p:PackageVersion=${input:packageVersion}",
                 "-p:AssemblyVersion=${input:packageVersion}",
-                "-o:out/redis"
+                "-o:C:/Users/${env:USERNAME}/.nuget/packages.local/StateStores.Redis"
             ],
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "pack.inmemory.out",
+            "label": "pack.inmemory.local",
             "command": "dotnet",
             "type": "process",
             "dependsOn": "test.inmemory",
@@ -142,7 +142,7 @@
                 "-c:Release",
                 "-p:PackageVersion=${input:packageVersion}",
                 "-p:AssemblyVersion=${input:packageVersion}",
-                "-o:out/inmemory"
+                "-o:C:/Users/${env:USERNAME}/.nuget/packages.local/StateStores.InMemory"
             ],
             "problemMatcher": "$msCompile"
         }

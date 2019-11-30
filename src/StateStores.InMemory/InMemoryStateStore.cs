@@ -43,7 +43,7 @@ namespace StateStores.InMemory
         private async Task<IDisposable> GetLockAsync<T>()
         {
             var sem = GetSemaphore<T>();
-            await sem.WaitAsync();
+            await sem.WaitAsync().ConfigureAwait(false);
             return Disposable.Create(() => sem.Release());
         }
 
