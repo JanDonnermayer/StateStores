@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace StateStores
 {
     public interface IStateStoreProxy<TState>
-    {
+    {        
+
         IObservable<TState> OnAdd { get; }
 
         IObservable<(TState previousState, TState currentState)> OnUpdate { get; }
@@ -17,5 +19,4 @@ namespace StateStores
 
         Task<StateStoreResult> RemoveAsync(TState currentState);
     }
-
 }

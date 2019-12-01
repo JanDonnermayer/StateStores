@@ -61,7 +61,8 @@ namespace StateStores.Test
         }
 
         // This is a state-transition-chain where observers invoke transitions.
-        public static async Task TestReactiveFunctionalityAsync(this IStateStoreProxy<int> proxy, int stateCount)
+        public static async Task TestReactiveFunctionalityAsync(
+            this IStateStoreProxy<int> proxy, int stateCount, int parallelHandlers = 1)
         {
 
             var mut_actualStateHistory = new List<int>();
@@ -75,16 +76,24 @@ namespace StateStores.Test
 
             var tcsStop = new TaskCompletionSource<int>();
 
+            Enumerable
+                .Range(0, parallelHandlers)
+                .Select(_ => 
+                    proxy
+                        .OnNext(ShouldProceed)
+                        .Do(i => proxy.UpdateAsync(i, i + 1))
+                        .Subscribe())
+                .ToList();
+
             proxy
-                .OnNext(ShouldProceed) 
-                .Do(i => proxy.UpdateAsync(i, i + 1))
+                .OnNext(ShouldProceed)
                 .Do(LogState)
                 .Subscribe();
 
             proxy
                 .OnNext(ShouldStop)
                 .Do(i => proxy.RemoveAsync(i))
-                .Subscribe(tcsStop.SetResult);           
+                .Subscribe(tcsStop.SetResult);
 
             const int INITIAL_STATE = 0;
             AssertOk(await proxy.AddAsync(INITIAL_STATE));

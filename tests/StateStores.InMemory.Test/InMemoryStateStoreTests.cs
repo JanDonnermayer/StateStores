@@ -21,5 +21,9 @@ namespace StateStores.InMemory.Test
         public Task TestParallelFunctionalityAsync() => 
             GetStateStore().TestParallelFunctionalityAsync(); 
 
+        [Test]
+        public Task TestReactiveFunctionalityAsync() => 
+            GetStateStore().CreateProxy<int>("key").TestReactiveFunctionalityAsync(10, 5); 
+
     }
 }

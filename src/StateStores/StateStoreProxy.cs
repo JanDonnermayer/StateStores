@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -19,9 +20,7 @@ namespace StateStores
         private class StateStoreProxyInstance<TState> : IStateStoreProxy<TState>
         {
             private readonly IStateStore store;
-
             private readonly string key;
-
             private readonly Lazy<IObservable<IImmutableDictionary<string, TState>>> lazyStateObervable;
 
             private IObservable<(IImmutableDictionary<string, TState> previous, IImmutableDictionary<string, TState> current)> GetObservable() =>
@@ -31,7 +30,6 @@ namespace StateStores
             {
                 this.store = store ?? throw new ArgumentNullException(nameof(store));
                 this.key = key ?? throw new ArgumentNullException(nameof(key));
-
                 this.lazyStateObervable = new Lazy<IObservable<IImmutableDictionary<string, TState>>>(
                     store.GetObservable<TState>
                 );
