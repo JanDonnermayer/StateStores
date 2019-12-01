@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -34,11 +36,30 @@ namespace StateStores.InMemory
                 key: typeof(TValue),
                 valueFactory: _ => new SemaphoreSlim(1, 1));
 
-        private ImmutableDictionary<string, TValue> GetStateMap<TValue>() =>
-            (ImmutableDictionary<string, TValue>)ImmutableInterlocked.GetOrAdd(
-                location: ref mut_stateMapMap,
-                key: typeof(TValue),
-                valueFactory: _ => ImmutableDictionary<string, TValue>.Empty);
+        private ImmutableQueue<ImmutableDictionary<string, TValue>> CreateQueue<TValue>() =>
+            ImmutableQueue.Create(
+                ImmutableDictionary<string, TValue>.Empty,
+                ImmutableDictionary<string, TValue>.Empty
+            );
+
+        private ImmutableQueue<ImmutableDictionary<string, TValue>> GetStateQueue<TValue>() =>
+            ((ImmutableQueue<ImmutableDictionary<string, TValue>>)ImmutableInterlocked
+                .GetOrAdd(
+                    location: ref mut_stateMapMap,
+                    key: typeof(TValue),
+                    valueFactory: _ => CreateQueue<TValue>()));
+
+        private void PushStateMap<TValue>(
+            Func<ImmutableDictionary<string, TValue>, ImmutableDictionary<string, TValue>> updateValue) =>
+                ImmutableInterlocked.AddOrUpdate(
+                    location: ref mut_stateMapMap,
+                    key: typeof(TValue),
+                    addValueFactory: _ => CreateQueue<TValue>(),
+                    updateValueFactory: (_, queue) =>
+                        ((ImmutableQueue<ImmutableDictionary<string, TValue>>)queue)
+                        .Enqueue(updateValue(((ImmutableQueue<ImmutableDictionary<string, TValue>>)queue)
+                            .Peek()))
+                       );
 
         private async Task<IDisposable> GetLockAsync<T>()
         {
@@ -59,15 +80,11 @@ namespace StateStores.InMemory
         {
             using var _ = await GetLockAsync<T>();
 
-            var map = GetStateMap<T>();
+            var map = GetStateQueue<T>().Peek();
 
             if (map.ContainsKey(key)) return new StateStoreResult.Error();
 
-            ImmutableInterlocked.Update(
-                location: ref mut_stateMapMap,
-                transformer: m => m.SetItem(
-                    key: typeof(T),
-                    value: map.SetItem(key, nextState)));
+            PushStateMap<T>(m => m.SetItem(key, nextState));
 
             NotifyObservers<T>();
 
@@ -78,16 +95,12 @@ namespace StateStores.InMemory
         {
             using var _ = await GetLockAsync<T>();
 
-            var map = GetStateMap<T>();
+            var map = GetStateQueue<T>().Peek();
 
             if (!map.TryGetValue(key, out var val)) return new StateStoreResult.Error();
             if (!val.Equals(currentState)) return new StateStoreResult.Error();
 
-            ImmutableInterlocked.Update(
-                location: ref mut_stateMapMap,
-                transformer: m => m.SetItem(
-                    key: typeof(T),
-                    value: map.SetItem(key, nextState)));
+            PushStateMap<T>(m => m.SetItem(key, nextState));
 
             NotifyObservers<T>();
 
@@ -99,24 +112,20 @@ namespace StateStores.InMemory
         {
             using var _ = await GetLockAsync<T>();
 
-            var map = GetStateMap<T>();
+            var map = GetStateQueue<T>().Peek();
 
             if (!map.TryGetValue(key, out var val)) return new StateStoreResult.Error();
             if (!val.Equals(currentState)) return new StateStoreResult.Error();
 
-            ImmutableInterlocked.Update(
-                location: ref mut_stateMapMap,
-                transformer: m => m.SetItem(
-                    key: typeof(T),
-                    value: map.Remove(key)));
+            PushStateMap<T>(m => m.Remove(key));
 
             NotifyObservers<T>();
 
             return new StateStoreResult.Ok();
         }
 
-        public IObservable<IImmutableDictionary<string, T>> GetObservable<T>() =>
-            GetSubject<T>().Select(_ => GetStateMap<T>());
+        public IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>() =>
+            GetSubject<T>().Select(_ => GetStateQueue<T>().AsEnumerable().Reverse());
 
         #endregion
 

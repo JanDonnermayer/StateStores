@@ -21,16 +21,16 @@ namespace StateStores
         {
             private readonly IStateStore store;
             private readonly string key;
-            private readonly Lazy<IObservable<IImmutableDictionary<string, TState>>> lazyStateObervable;
+            private readonly Lazy<IObservable<IEnumerable<ImmutableDictionary<string, TState>>>> lazyStateObervable;
 
-            private IObservable<(IImmutableDictionary<string, TState> previous, IImmutableDictionary<string, TState> current)> GetObservable() =>
-                lazyStateObervable.Value.Buffer(2, 1).Select(_ => (_[0], _[1]));
+            private IObservable<(ImmutableDictionary<string, TState> previous, ImmutableDictionary<string, TState> current)> GetObservable() =>
+                lazyStateObervable.Value.Select(_ => (_.Skip(1).First(), _.First()));
 
             public StateStoreProxyInstance(IStateStore store, string key)
             {
                 this.store = store ?? throw new ArgumentNullException(nameof(store));
                 this.key = key ?? throw new ArgumentNullException(nameof(key));
-                this.lazyStateObervable = new Lazy<IObservable<IImmutableDictionary<string, TState>>>(
+                this.lazyStateObervable = new Lazy<IObservable<IEnumerable<ImmutableDictionary<string, TState>>>>(
                     store.GetObservable<TState>
                 );
             }

@@ -13,7 +13,7 @@ namespace StateStores
 
         Task<StateStoreResult> RemoveAsync<T>(string key, T current);
 
-        IObservable<IImmutableDictionary<string, T>> GetObservable<T>();
+        IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>();
 
     }
 

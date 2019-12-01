@@ -57,7 +57,7 @@ namespace StateStores.Test
                 EXPECTED_REMOVE_NOTIFICATION_COUNT,
                 mut_ActualRemoveNotificationCount);
         }
-        
+
         public static async Task TestReplayFunctionalityAsync(this IStateStoreProxy<SampleStates> proxy)
         {
             const SampleStates SAMPLE_STATE_1 = SampleStates.state1;
