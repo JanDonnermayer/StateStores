@@ -16,13 +16,11 @@ namespace StateStores.Test
 
         public static async Task TestBasicFunctionalityAsync(this IStateStoreProxy<SampleStates> proxy)
         {
-
-
             const SampleStates SAMPLE_STATE_1 = SampleStates.state1;
             const SampleStates SAMPLE_STATE_2 = SampleStates.state2;
 
-            const int EXPECTED_UPDATE_NOTIFICATION_COUNT = 1;
             const int EXPECTED_ADD_NOTIFICATION_COUNT = 1;
+            const int EXPECTED_UPDATE_NOTIFICATION_COUNT = 1;
             const int EXPECTED_REMOVE_NOTIFICATION_COUNT = 1;
 
             const int OBSERVER_DELAY_MS = 200;
@@ -59,6 +57,29 @@ namespace StateStores.Test
                 EXPECTED_REMOVE_NOTIFICATION_COUNT,
                 mut_ActualRemoveNotificationCount);
         }
+        
+        public static async Task TestReplayFunctionalityAsync(this IStateStoreProxy<SampleStates> proxy)
+        {
+            const SampleStates SAMPLE_STATE_1 = SampleStates.state1;
+
+            const int EXPECTED_ADD_NOTIFICATION_COUNT = 2;
+
+            const int OBSERVER_DELAY_MS = 200;
+
+            int mut_ActualAddNotificationCount = 0;
+
+            // Can set 
+            AssertOk(await proxy.AddAsync(SAMPLE_STATE_1));
+
+            proxy.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
+            proxy.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
+
+            await Task.Delay(OBSERVER_DELAY_MS);
+
+            Assert.AreEqual(
+                EXPECTED_ADD_NOTIFICATION_COUNT,
+                mut_ActualAddNotificationCount);
+        }
 
         // This is a state-transition-chain where observers invoke transitions.
         public static async Task TestReactiveFunctionalityAsync(
@@ -78,7 +99,7 @@ namespace StateStores.Test
 
             Enumerable
                 .Range(0, parallelHandlers)
-                .Select(_ => 
+                .Select(_ =>
                     proxy
                         .OnNext(ShouldProceed)
                         .Do(i => proxy.UpdateAsync(i, i + 1))

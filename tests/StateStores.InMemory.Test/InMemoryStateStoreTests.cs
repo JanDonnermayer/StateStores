@@ -3,12 +3,13 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using StateStores.InMemory;
 using StateStores.Test;
+using static StateStores.Test.StateStoreProxyTests;
 
 namespace StateStores.InMemory.Test
 {
 
     [TestFixture]
-    public class InMemoryStateStoreTests
+    class InMemoryStateStoreTests
     {
         private static InMemoryStateStore GetStateStore() =>
             new InMemoryStateStore();
@@ -23,7 +24,11 @@ namespace StateStores.InMemory.Test
 
         [Test]
         public Task TestReactiveFunctionalityAsync() => 
-            GetStateStore().CreateProxy<int>("key").TestReactiveFunctionalityAsync(10, 5); 
+            GetStateStore().CreateProxy<int>("key1").TestReactiveFunctionalityAsync(10, 5); 
+
+        [Test]
+        public Task TestReplayFunctionalityAsync() => 
+            GetStateStore().CreateProxy<SampleStates>("key2").TestReplayFunctionalityAsync();
 
     }
 }
