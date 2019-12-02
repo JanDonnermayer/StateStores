@@ -38,18 +38,21 @@ namespace StateStores.Redis
         private static string GetChannelName<TState>() =>
            "udpdate_channel_" + typeof(TState).FullName;
 
+        private const int CURRENT_SET = 0;
+        private const int PREVIOUS_SET = 1;
+
         private static string GetSetName<TState>(int index) =>
            $"set_{typeof(TState).FullName}_{index.ToString()}";
 
         /// <summary>
         /// Use a queue of indices instead
         /// </summary>
-        private static async Task MoveSet0To1<T>(IDatabase database) =>
+        private static async Task MoveSets<T>(IDatabase database) =>
             await database.SetCombineAndStoreAsync(
                 operation: SetOperation.Union,
-                destination: GetSetName<T>(1),
-                first: GetSetName<T>(0),
-                second: GetSetName<T>(0));
+                destination: GetSetName<T>(PREVIOUS_SET),
+                first: GetSetName<T>(CURRENT_SET),
+                second: GetSetName<T>(CURRENT_SET));
 
         private async Task NotifyObserversAsync<TState>() =>
             await GetSubscriber().PublishAsync(
@@ -96,8 +99,8 @@ namespace StateStores.Redis
         {
             this.server = server ?? throw new ArgumentNullException(nameof(server));
             this.lazy_redis = new Lazy<ConnectionMultiplexer>(() => ConnectionMultiplexer.Connect(this.server));
-            this.lazy_database = new Lazy<IDatabase>(() => lazy_redis.Value.GetDatabase());
             this.lazy_subscriber = new Lazy<ISubscriber>(() => lazy_redis.Value.GetSubscriber());
+            this.lazy_database = new Lazy<IDatabase>(() => lazy_redis.Value.GetDatabase());
         }
 
         #endregion
@@ -114,8 +117,8 @@ namespace StateStores.Redis
 
             if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
 
-            await MoveSet0To1<T>(database);
-            await database.SetAddAsync(GetSetName<T>(0), ToRedisValue(new KeyValuePair<string, T>(key, next)));
+            await MoveSets<T>(database);
+            await database.SetAddAsync(GetSetName<T>(CURRENT_SET), ToRedisValue(new KeyValuePair<string, T>(key, next)));
 
             return new StateStoreResult.Ok();
         }
@@ -129,9 +132,9 @@ namespace StateStores.Redis
 
             if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
 
-            await MoveSet0To1<T>(database);
-            await database.SetRemoveAsync(GetSetName<T>(0), ToRedisValue(new KeyValuePair<string, T>(key, current)));
-            await database.SetAddAsync(GetSetName<T>(0), ToRedisValue(new KeyValuePair<string, T>(key, next)));
+            await MoveSets<T>(database);
+            await database.SetRemoveAsync(GetSetName<T>(CURRENT_SET), ToRedisValue(new KeyValuePair<string, T>(key, current)));
+            await database.SetAddAsync(GetSetName<T>(CURRENT_SET), ToRedisValue(new KeyValuePair<string, T>(key, next)));
 
             return new StateStoreResult.Ok();
         }
@@ -145,8 +148,8 @@ namespace StateStores.Redis
 
             if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
 
-            await MoveSet0To1<T>(database);
-            await database.SetRemoveAsync(GetSetName<T>(0), ToRedisValue(new KeyValuePair<string, T>(key, current)));
+            await MoveSets<T>(database);
+            await database.SetRemoveAsync(GetSetName<T>(CURRENT_SET), ToRedisValue(new KeyValuePair<string, T>(key, current)));
 
             return new StateStoreResult.Ok();
         }
@@ -182,15 +185,15 @@ namespace StateStores.Redis
             GetObservable(GetChannelName<T>())
                 .Select(_ => Observable.FromAsync(async () =>
                     ImmutableList.Create(
-                        DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>(1))),
-                        DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>(0)))
+                        DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>(PREVIOUS_SET))),
+                        DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>(CURRENT_SET)))
                     
                 )))
                 .Concat()
                 .Merge(Observable.FromAsync(async () =>
                     ImmutableList.Create(
                         ImmutableDictionary<string, T>.Empty,
-                        DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>(0)))
+                        DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>(CURRENT_SET)))
                 )))
                 .Replay(1)
                 .RefCount();
