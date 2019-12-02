@@ -42,24 +42,31 @@ namespace StateStores.InMemory
                 ImmutableDictionary<string, TValue>.Empty
             );
 
+        private static ImmutableQueue<ImmutableDictionary<string, TValue>> CastQueue<TValue>(object queue) =>
+            (ImmutableQueue<ImmutableDictionary<string, TValue>>)queue;
+
         private ImmutableQueue<ImmutableDictionary<string, TValue>> GetStateQueue<TValue>() =>
-            ((ImmutableQueue<ImmutableDictionary<string, TValue>>)ImmutableInterlocked
+            CastQueue<TValue>(ImmutableInterlocked
                 .GetOrAdd(
                     location: ref mut_stateMapMap,
                     key: typeof(TValue),
                     valueFactory: _ => CreateQueue<TValue>()));
-
         private void PushStateMap<TValue>(
             Func<ImmutableDictionary<string, TValue>, ImmutableDictionary<string, TValue>> updateValue) =>
                 ImmutableInterlocked.AddOrUpdate(
                     location: ref mut_stateMapMap,
                     key: typeof(TValue),
-                    addValueFactory: _ => CreateQueue<TValue>(),
-                    updateValueFactory: (_, queue) =>
-                        ((ImmutableQueue<ImmutableDictionary<string, TValue>>)queue)
-                        .Enqueue(updateValue(((ImmutableQueue<ImmutableDictionary<string, TValue>>)queue)
-                            .Peek()))
-                       );
+                    addValueFactory: _ => CreateQueue<TValue>()
+                        .Dequeue()
+                        .Enqueue(updateValue(ImmutableDictionary<string, TValue>.Empty)),
+                    updateValueFactory: (_, _queue) =>
+                    {
+                        var queue = CastQueue<TValue>(_queue);
+                        return queue
+                            .Dequeue()
+                            .Enqueue(updateValue(queue.Peek()));
+                    });
+
 
         private async Task<IDisposable> GetLockAsync<T>()
         {
@@ -80,7 +87,7 @@ namespace StateStores.InMemory
         {
             using var _ = await GetLockAsync<T>();
 
-            var map = GetStateQueue<T>().Peek();
+            var map = GetStateQueue<T>().Last();
 
             if (map.ContainsKey(key)) return new StateStoreResult.Error();
 
@@ -95,7 +102,7 @@ namespace StateStores.InMemory
         {
             using var _ = await GetLockAsync<T>();
 
-            var map = GetStateQueue<T>().Peek();
+            var map = GetStateQueue<T>().Last();
 
             if (!map.TryGetValue(key, out var val)) return new StateStoreResult.Error();
             if (!val.Equals(currentState)) return new StateStoreResult.Error();
@@ -112,7 +119,7 @@ namespace StateStores.InMemory
         {
             using var _ = await GetLockAsync<T>();
 
-            var map = GetStateQueue<T>().Peek();
+            var map = GetStateQueue<T>().Last();
 
             if (!map.TryGetValue(key, out var val)) return new StateStoreResult.Error();
             if (!val.Equals(currentState)) return new StateStoreResult.Error();
@@ -125,7 +132,7 @@ namespace StateStores.InMemory
         }
 
         public IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>() =>
-            GetSubject<T>().Select(_ => GetStateQueue<T>().AsEnumerable().Reverse());
+            GetSubject<T>().Select(_ => GetStateQueue<T>().AsEnumerable());
 
         #endregion
 
