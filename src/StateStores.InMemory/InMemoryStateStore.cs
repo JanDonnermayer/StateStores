@@ -36,7 +36,7 @@ namespace StateStores.InMemory
                 key: typeof(TValue),
                 valueFactory: _ => new SemaphoreSlim(1, 1));
 
-        private ImmutableQueue<ImmutableDictionary<string, TValue>> CreateQueue<TValue>() =>
+        private ImmutableQueue<ImmutableDictionary<string, TValue>> CreateDefaultQueue<TValue>() =>
             ImmutableQueue.Create(
                 ImmutableDictionary<string, TValue>.Empty,
                 ImmutableDictionary<string, TValue>.Empty
@@ -50,13 +50,13 @@ namespace StateStores.InMemory
                 .GetOrAdd(
                     location: ref mut_stateMapMap,
                     key: typeof(TValue),
-                    valueFactory: _ => CreateQueue<TValue>()));
+                    valueFactory: _ => CreateDefaultQueue<TValue>()));
         private void PushStateMap<TValue>(
             Func<ImmutableDictionary<string, TValue>, ImmutableDictionary<string, TValue>> updateValue) =>
                 ImmutableInterlocked.AddOrUpdate(
                     location: ref mut_stateMapMap,
                     key: typeof(TValue),
-                    addValueFactory: _ => CreateQueue<TValue>()
+                    addValueFactory: _ => CreateDefaultQueue<TValue>()
                         .Dequeue()
                         .Enqueue(updateValue(ImmutableDictionary<string, TValue>.Empty)),
                     updateValueFactory: (_, _queue) =>
@@ -64,7 +64,7 @@ namespace StateStores.InMemory
                         var queue = CastQueue<TValue>(_queue);
                         return queue
                             .Dequeue()
-                            .Enqueue(updateValue(queue.Peek()));
+                            .Enqueue(updateValue(queue.Last()));
                     });
 
 

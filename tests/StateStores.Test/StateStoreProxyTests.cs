@@ -62,11 +62,13 @@ namespace StateStores.Test
         {
             const SampleStates SAMPLE_STATE_1 = SampleStates.state1;
 
-            const int EXPECTED_ADD_NOTIFICATION_COUNT = 2;
+            const int EXPECTED_ADD_NOTIFICATION_COUNT = 3;
 
             const int OBSERVER_DELAY_MS = 200;
 
             int mut_ActualAddNotificationCount = 0;
+
+            proxy.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
 
             // Can set 
             AssertOk(await proxy.AddAsync(SAMPLE_STATE_1));
