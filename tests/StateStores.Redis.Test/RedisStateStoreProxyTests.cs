@@ -4,6 +4,7 @@ using NUnit.Framework;
 using StackExchange.Redis;
 using StateStores.Redis;
 using StateStores.Test;
+using static StateStores.Test.StateStoreProxyTests;
 
 namespace StateStores.Redis.Test
 {
@@ -20,6 +21,15 @@ namespace StateStores.Redis.Test
             await store
                 .CreateProxy<int>(key: Guid.NewGuid().ToString())
                 .TestReactiveFunctionalityAsync(stateCount: 1000);
+        }
+
+        [Test]
+        public async Task TestReplayFunctionalityAsync()
+        {
+            using var store = RedisStateStoreFactory.GetStateStore();
+            await store
+                .CreateProxy<SampleStates>(key: Guid.NewGuid().ToString())
+                .TestReplayFunctionalityAsync();
         }
     }
 }

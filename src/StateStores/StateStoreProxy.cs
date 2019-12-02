@@ -24,7 +24,9 @@ namespace StateStores
             private readonly Lazy<IObservable<IEnumerable<ImmutableDictionary<string, TState>>>> lazyStateObervable;
 
             private IObservable<(ImmutableDictionary<string, TState> previous, ImmutableDictionary<string, TState> current)> GetObservable() =>
-                lazyStateObervable.Value.Select(_ => _.Reverse()).Select(_ => (_.Skip(1).First(), _.First()));
+                lazyStateObervable.Value
+                    .Select(_ => _.Reverse())
+                    .Select(_ => (_.Skip(1).First(), _.First()));
 
             public StateStoreProxyInstance(IStateStore store, string key)
             {
@@ -57,8 +59,8 @@ namespace StateStores
             public IObservable<(TState previousState, TState currentState)> OnUpdate =>
                 GetObservable()
                     .Where(_ => _.current.ContainsKey(key) && _.previous.ContainsKey(key))
-                    .Select(_ => (_.previous[key], _.current[key]))
-                    .Where(_ => !_.Item1.Equals(_.Item2));
+                    .Select(_ => (previousState: _.previous[key], currentState: _.current[key]))
+                    .Where(_ => !_.previousState.Equals(_.currentState));
         }
 
         #endregion
