@@ -105,8 +105,6 @@ namespace StateStores.Redis
 
         #region  Internal
 
-
-
         static async Task<StateStoreResult> AddInternalAsync<T>(IDatabase database, string key, T next)
         {
             var transaction = database.CreateTransaction();
@@ -137,7 +135,6 @@ namespace StateStores.Redis
 
             return new StateStoreResult.Ok();
         }
-
 
         static async Task<StateStoreResult> RemoveInternalAsync<T>(IDatabase database, string key, T current)
         {
@@ -199,6 +196,7 @@ namespace StateStores.Redis
                 .RefCount();
 
         #endregion
+
 
         #region  IDisposable
 

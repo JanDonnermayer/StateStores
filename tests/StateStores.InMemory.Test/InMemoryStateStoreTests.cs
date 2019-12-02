@@ -16,19 +16,25 @@ namespace StateStores.InMemory.Test
 
         [Test]
         public Task TestBasicFunctionalityAsync() => 
-            GetStateStore().TestBasicFunctionalityAsync(key: Guid.NewGuid().ToString()); 
+            GetStateStore()
+                .TestBasicFunctionalityAsync(key: Guid.NewGuid().ToString()); 
 
         [Test]
         public Task TestParallelFunctionalityAsync() => 
-            GetStateStore().TestParallelFunctionalityAsync(); 
+            GetStateStore()
+                .TestParallelFunctionalityAsync(); 
 
         [Test]
         public Task TestReactiveFunctionalityAsync() => 
-            GetStateStore().CreateProxy<int>("key1").TestReactiveFunctionalityAsync(10, 5); 
+            GetStateStore()
+                .CreateProxy<int>("key1")
+                .TestReactiveFunctionalityAsync(10, 5); 
 
         [Test]
         public Task TestReplayFunctionalityAsync() => 
-            GetStateStore().CreateProxy<SampleStates>("key2").TestReplayFunctionalityAsync();
+            GetStateStore()
+                .CreateProxy<SampleStates>("key2")
+                .TestReplayFunctionalityAsync();
 
     }
 }
