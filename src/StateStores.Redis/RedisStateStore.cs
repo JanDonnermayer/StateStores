@@ -185,14 +185,15 @@ namespace StateStores.Redis
             GetObservable(GetChannelName<T>())
                 .Select(_ => Observable.FromAsync(async () =>
                     ImmutableList.Create(
-                        ImmutableDictionary<string, T>.Empty,
+                        DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>(1))),
                         DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>(0)))
+                    
                 )))
                 .Concat()
                 .Merge(Observable.FromAsync(async () =>
-                   Enumerable.Repeat(
-                        DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>(0))),
-                        2
+                    ImmutableList.Create(
+                        ImmutableDictionary<string, T>.Empty,
+                        DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>(0)))
                 )))
                 .Replay(1)
                 .RefCount();
