@@ -63,6 +63,22 @@
             "problemMatcher": "$msCompile"
         },
         {
+            "label": "pack.arrk",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "pack",
+                "${workspaceFolder}/src/StateStores/StateStores.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary",
+                "-c:Release",
+                "-p:PackageVersion=${input:packageVersion}",
+                "-p:AssemblyVersion=${input:packageVersion}",
+                "-o://mucfs/project/TOOLS/Mupe/Private/Development/.Nuget/statestores"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
             "label": "pack.redis.arrk",
             "command": "dotnet",
             "type": "process",
@@ -75,7 +91,7 @@
                 "-c:Release",
                 "-p:PackageVersion=${input:packageVersion}",
                 "-p:AssemblyVersion=${input:packageVersion}",
-                "-o://mucfs/project/TOOLS/Mupe/Private/Development/.NuGet"
+                "-o://mucfs/project/TOOLS/Mupe/Private/Development/.Nuget/statestores.redis"
             ],
             "problemMatcher": "$msCompile"
         },
@@ -92,7 +108,7 @@
                 "-c:Release",
                 "-p:PackageVersion=${input:packageVersion}",
                 "-p:AssemblyVersion=${input:packageVersion}",
-                "-o://mucfs/project/TOOLS/Mupe/Private/Development/.NuGet"
+                "-o://mucfs/project/TOOLS/Mupe/Private/Development/.Nuget/statestores.inmemory"
             ],
             "problemMatcher": "$msCompile"
         },
@@ -111,7 +127,7 @@
                 "-o:C:/Users/${env:USERNAME}/.nuget/packages.local/StateStores"
             ],
             "problemMatcher": "$msCompile"
-        },        
+        },
         {
             "label": "pack.redis.local",
             "command": "dotnet",
