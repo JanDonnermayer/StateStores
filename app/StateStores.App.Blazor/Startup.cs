@@ -29,7 +29,7 @@ namespace StateStores.App.Blazor
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
-            services.AddSingleton<IStateStore>(_ => new RedisStateStore())
+            services.AddSingleton<IStateStore>(_ => RedisStateStoreFactory.GetStateStore());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
