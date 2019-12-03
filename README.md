@@ -3,7 +3,7 @@
 [![](https://github.com/JanDonnermayer/StateStores/workflows/UnitTests/badge.svg)](
 https://github.com/JanDonnermayer/StateStores/actions)
 
-[![](https://img.shields.io/badge/nuget-v0.0.1-blue.svg)](
+[![](https://img.shields.io/badge/nuget-v0.0.2-blue.svg)](
 https://www.nuget.org/packages/StateStores.Redis/)
 
 Provides a simple interface for observing and modifying state atomically.
@@ -18,7 +18,8 @@ enum States { S1, S2 };
 
 // ...
 
-var proxy = new RedisStateStore(SERVER).CreateProxy<States>(KEY);
+var proxy = new RedisStateStore(server: "localhost:8080")
+    .CreateProxy<States>("state1");
 
 // Reactive-transit: S1 --> S2
 proxy

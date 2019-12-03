@@ -22,7 +22,7 @@ namespace StateStores.InMemory.Test
         [Test]
         public Task TestParallelFunctionalityAsync() => 
             GetStateStore()
-                .TestParallelFunctionalityAsync(5, 10000); 
+                .TestParallelFunctionalityAsync(3, 100); 
 
         [Test]
         public Task TestReactiveFunctionalityAsync() => 
