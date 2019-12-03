@@ -172,14 +172,14 @@ namespace StateStores.Redis
 
         public IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>() =>
             GetObservable(GetChannelName<T>())
-                .Select(_ => Observable.FromAsync(async () =>
+                .Select(_ => Observable.FromAsync(async () => // React to Messages
                     DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>(CURRENT_SET)))
                 ))
                 .Concat()
-                .Merge(Observable.Return(
+                .Merge(Observable.Return( // Start with empty set
                     ImmutableDictionary<string, T>.Empty)
                 )
-                .Merge(Observable.FromAsync(async () =>
+                .Merge(Observable.FromAsync(async () => // Pass initial set
                     DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>(CURRENT_SET)))
                 ))
                 .Buffer(2, 1)
