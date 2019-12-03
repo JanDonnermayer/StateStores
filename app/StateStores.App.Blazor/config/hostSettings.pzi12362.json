@@ -1,0 +1,4 @@
+{
+    "URLS" : "http://{$env:machinename}:5005",
+    "Redis" : "linux-genet01:7001" 
+}

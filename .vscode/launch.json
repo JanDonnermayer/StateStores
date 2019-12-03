@@ -8,12 +8,22 @@
             "name": ".NET Core Launch (console)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/tests/StateStores.Test/bin/Debug/netcoreapp3.0/StateStores.Test.dll",
+            "preLaunchTask": "build.blazor",
+            "program": "${workspaceFolder}/app/StateStores.App.Blazor/bin/Debug/netcoreapp3.1/StateStores.App.Blazor.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/tests/StateStores.Test",
+            "cwd": "${workspaceFolder}/app/StateStores.App.Blazor",
             "console": "internalConsole",
-            "stopAtEntry": false
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "^\\s*Now listening on:\\s+(https?://\\S+)"                
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/src/Views"
+            }
         },
         {
             "name": ".NET Core Attach",

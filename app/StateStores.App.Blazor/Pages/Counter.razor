@@ -1,0 +1,45 @@
+﻿@page "/counter/{name}"
+@inject IStateStore stateStore
+@implements IDisposable
+
+<h1>Counter @Name</h1>
+
+<p>Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCountAsync">Click me</button>
+
+@code {
+
+    [Parameter]
+    public string Name { get; set; }
+
+    private int currentCount = 0;
+
+    private IStateStoreProxy<int> proxy;
+
+    private IDisposable disposable;
+
+    private async Task IncrementCountAsync()
+    {
+       if (currentCount == 0) await proxy.AddAsync(0);
+       var limit = currentCount + 10000;
+       for (int i = currentCount; i < limit; i++)
+            await proxy.UpdateAsync(i, i + 1);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        proxy = stateStore.CreateProxy<int>(GetType().AssemblyQualifiedName + "_" + Name);
+
+        disposable = proxy           
+            .OnNext()
+            .Do(_ => currentCount = _)
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(_ => StateHasChanged());
+    }
+
+    public void Dispose() => disposable?.Dispose();
+
+}

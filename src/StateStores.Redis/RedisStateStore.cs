@@ -38,18 +38,10 @@ namespace StateStores.Redis
         private static string GetChannelName<TState>() =>
            "udpdate_channel_" + typeof(TState).FullName;
 
-        private static string GetSetName<TState>(int index) =>
-           $"set_{typeof(TState).FullName}_{index.ToString()}";
+        private const int CURRENT_SET = 0;
 
-        /// <summary>
-        /// Use a queue of indices instead
-        /// </summary>
-        private static async Task MoveSet0To1<T>(IDatabase database) =>
-            await database.SetCombineAndStoreAsync(
-                operation: SetOperation.Union,
-                destination: GetSetName<T>(1),
-                first: GetSetName<T>(0),
-                second: GetSetName<T>(0));
+        private static string GetHashName<TState>(int index) =>
+           $"set_{typeof(TState).FullName}_{index.ToString()}";
 
         private async Task NotifyObserversAsync<TState>() =>
             await GetSubscriber().PublishAsync(
@@ -74,8 +66,10 @@ namespace StateStores.Redis
             );
         }
 
-        static ImmutableDictionary<string, T> DictionaryFromValues<T>(RedisValue[] values) =>
-           values.Select(FromRedisValue<KeyValuePair<string, T>>).ToImmutableDictionary();
+        static ImmutableDictionary<string, T> DictionaryFromValues<T>(HashEntry[] entries) =>
+            entries
+                .Select(_ => new KeyValuePair<string, T>(_.Name, FromRedisValue<T>(_.Value) ))
+                .ToImmutableDictionary();
 
         private static RedisValue ToRedisValue<T>(T value) =>
             JsonConvert.SerializeObject(value);
@@ -96,16 +90,14 @@ namespace StateStores.Redis
         {
             this.server = server ?? throw new ArgumentNullException(nameof(server));
             this.lazy_redis = new Lazy<ConnectionMultiplexer>(() => ConnectionMultiplexer.Connect(this.server));
-            this.lazy_database = new Lazy<IDatabase>(() => lazy_redis.Value.GetDatabase());
             this.lazy_subscriber = new Lazy<ISubscriber>(() => lazy_redis.Value.GetSubscriber());
+            this.lazy_database = new Lazy<IDatabase>(() => lazy_redis.Value.GetDatabase());
         }
 
         #endregion
 
 
         #region  Internal
-
-
 
         static async Task<StateStoreResult> AddInternalAsync<T>(IDatabase database, string key, T next)
         {
@@ -116,8 +108,8 @@ namespace StateStores.Redis
 
             if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
 
-            await MoveSet0To1<T>(database);
-            await database.SetAddAsync(GetSetName<T>(0), ToRedisValue(new KeyValuePair<string, T>(key, next)));
+            await database.HashSetAsync(GetHashName<T>(CURRENT_SET),
+                new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
 
             return new StateStoreResult.Ok();
         }
@@ -131,13 +123,11 @@ namespace StateStores.Redis
 
             if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
 
-            await MoveSet0To1<T>(database);
-            await database.SetRemoveAsync(GetSetName<T>(0), ToRedisValue(new KeyValuePair<string, T>(key, current)));
-            await database.SetAddAsync(GetSetName<T>(0), ToRedisValue(new KeyValuePair<string, T>(key, next)));
+            await database.HashSetAsync(GetHashName<T>(CURRENT_SET),
+                new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
 
             return new StateStoreResult.Ok();
         }
-
 
         static async Task<StateStoreResult> RemoveInternalAsync<T>(IDatabase database, string key, T current)
         {
@@ -148,8 +138,7 @@ namespace StateStores.Redis
 
             if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
 
-            await MoveSet0To1<T>(database);
-            await database.SetRemoveAsync(GetSetName<T>(0), ToRedisValue(new KeyValuePair<string, T>(key, current)));
+            await database.HashDeleteAsync(GetHashName<T>(CURRENT_SET), key);
 
             return new StateStoreResult.Ok();
         }
@@ -183,22 +172,22 @@ namespace StateStores.Redis
 
         public IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>() =>
             GetObservable(GetChannelName<T>())
-                .Select(_ => Observable.FromAsync(async () =>
-                    ImmutableList.Create(
-                        DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>(1))),
-                        DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>(0)))
-                    
-                )))
+                .Select(_ => Observable.FromAsync(async () => // React to Messages
+                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>(CURRENT_SET)))
+                ))
                 .Concat()
-                .Merge(Observable.FromAsync(async () =>
-                    ImmutableList.Create(
-                        ImmutableDictionary<string, T>.Empty,
-                        DictionaryFromValues<T>(await GetDatabase().SetMembersAsync(GetSetName<T>(0)))
-                )))
+                .Merge(Observable.Return( // Start with empty set
+                    ImmutableDictionary<string, T>.Empty)
+                )
+                .Merge(Observable.FromAsync(async () => // Pass initial set
+                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>(CURRENT_SET)))
+                ))
+                .Buffer(2, 1)
                 .Replay(1)
                 .RefCount();
 
         #endregion
+
 
         #region  IDisposable
 
