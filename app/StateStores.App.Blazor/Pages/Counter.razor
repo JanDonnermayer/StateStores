@@ -24,7 +24,7 @@
        if (currentCount == 0) await proxy.AddAsync(0);
        var limit = currentCount + 10000;
        for (int i = currentCount; i < limit; i++)
-            await proxy.UpdateAsync(i, i + 1);
+           if (await proxy.UpdateAsync(i, i + 1) is StateStoreResult.Error) return;
     }
 
     protected override async Task OnInitializedAsync()

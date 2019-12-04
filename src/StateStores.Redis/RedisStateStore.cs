@@ -108,7 +108,7 @@ namespace StateStores.Redis
 
             if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
 
-            await database.HashSetAsync(GetHashName<T>(CURRENT_SET),
+            _ = database.HashSetAsync(GetHashName<T>(CURRENT_SET),
                 new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
 
             return new StateStoreResult.Ok();
@@ -123,7 +123,7 @@ namespace StateStores.Redis
 
             if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
 
-            await database.HashSetAsync(GetHashName<T>(CURRENT_SET),
+            _ = database.HashSetAsync(GetHashName<T>(CURRENT_SET),
                 new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
 
             return new StateStoreResult.Ok();
@@ -138,7 +138,7 @@ namespace StateStores.Redis
 
             if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
 
-            await database.HashDeleteAsync(GetHashName<T>(CURRENT_SET), key);
+            _ = database.HashDeleteAsync(GetHashName<T>(CURRENT_SET), key);
 
             return new StateStoreResult.Ok();
         }
@@ -151,21 +151,24 @@ namespace StateStores.Redis
 
         public async Task<StateStoreResult> AddAsync<T>(string key, T next)
         {
-            var res = await AddInternalAsync(GetDatabase(), key, next);
+            var res = await AddInternalAsync(GetDatabase(), key, next)
+                .ConfigureAwait(false);
             if (res is StateStoreResult.Ok) _ = NotifyObserversAsync<T>();
             return res;
         }
 
         public async Task<StateStoreResult> UpdateAsync<T>(string key, T current, T next)
         {
-            var res = await UpdateInternalAsync(GetDatabase(), key, current, next);
+            var res = await UpdateInternalAsync(GetDatabase(), key, current, next)
+                .ConfigureAwait(false);
             if (res is StateStoreResult.Ok) _ = NotifyObserversAsync<T>();
             return res;
         }
 
         public async Task<StateStoreResult> RemoveAsync<T>(string key, T current)
         {
-            var res = await RemoveInternalAsync(GetDatabase(), key, current);
+            var res = await RemoveInternalAsync(GetDatabase(), key, current)
+                .ConfigureAwait(false);
             if (res is StateStoreResult.Ok) _ = NotifyObserversAsync<T>();
             return res;
         }

@@ -18,10 +18,10 @@ namespace StateStores.Redis.Test
 
         [Test]
         public async Task TestParallelFunctionalityAsync()
-        {
+        {          
             using var store = RedisStateStoreFactory.GetStateStore();
             await store.TestParallelFunctionalityAsync(
-                parallelWorkersCount: 2,
+                parallelWorkersCount: 20,
                 transactionsBlockCount: 100
             );
         }
