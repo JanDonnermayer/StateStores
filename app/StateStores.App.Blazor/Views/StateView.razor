@@ -19,7 +19,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var state in states)
+            @foreach (var state in states.OrderBy(i => i.Key))
             {
                 <tr>
                     <td>@state.Key</td>
