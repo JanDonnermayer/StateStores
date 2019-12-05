@@ -3,7 +3,7 @@
 [![](https://github.com/JanDonnermayer/StateStores/workflows/UnitTests/badge.svg)](
 https://github.com/JanDonnermayer/StateStores/actions)
 
-[![](https://img.shields.io/badge/nuget-v0.0.2-blue.svg)](
+[![](https://img.shields.io/badge/nuget-v0.0.3-blue.svg)](
 https://www.nuget.org/packages/StateStores.Redis/)
 
 Provides a simple interface for observing and modifying state atomically.
