@@ -27,17 +27,18 @@
            if (await proxy.UpdateAsync(i, i + 1) is StateStoreResult.Error) return;
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        await base.OnInitializedAsync();
+        await base.OnParametersSetAsync();
 
         proxy = stateStore.CreateProxy<int>(GetType().FullName + "_" + Name);
 
-        disposable = proxy           
+        Interlocked.Exchange(ref disposable, proxy           
             .OnNext()
             .Do(_ => currentCount = _)
             .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(_ => StateHasChanged());
+            .Subscribe(_ => StateHasChanged()))
+            ?.Dispose();
     }
 
     public void Dispose() => disposable?.Dispose();

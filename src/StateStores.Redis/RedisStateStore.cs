@@ -111,14 +111,12 @@ namespace StateStores.Redis
         static async Task<StateStoreResult> AddInternalAsync<T>(IDatabase database, string key, T next)
         {
             var transaction = database.CreateTransaction();
-            transaction.AddCondition(Condition.KeyNotExists(key));
+            transaction.AddCondition(Condition.HashNotExists(GetHashName<T>(CURRENT_SET), key));
 
-            _ = transaction.StringSetAsync(key, ToRedisValue(next));
+            _ = transaction.HashSetAsync(GetHashName<T>(CURRENT_SET),
+                new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
 
             if (!await transaction.ExecuteAsync()) return new StateError();
-
-            _ = database.HashSetAsync(GetHashName<T>(CURRENT_SET),
-                new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
 
             return new Ok();
         }
@@ -126,14 +124,12 @@ namespace StateStores.Redis
         static async Task<StateStoreResult> UpdateInternalAsync<T>(IDatabase database, string key, T current, T next)
         {
             var transaction = database.CreateTransaction();
-            transaction.AddCondition(Condition.StringEqual(key, ToRedisValue(current)));
+            transaction.AddCondition(Condition.HashEqual(GetHashName<T>(CURRENT_SET), key, ToRedisValue(current)));
 
-            _ = transaction.StringSetAsync(key, ToRedisValue(next));
+            _ = transaction.HashSetAsync(GetHashName<T>(CURRENT_SET),
+                new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
 
             if (!await transaction.ExecuteAsync()) return new StateError();
-
-            _ = database.HashSetAsync(GetHashName<T>(CURRENT_SET),
-                new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
 
             return new Ok();
         }
@@ -141,13 +137,11 @@ namespace StateStores.Redis
         static async Task<StateStoreResult> RemoveInternalAsync<T>(IDatabase database, string key, T current)
         {
             var transaction = database.CreateTransaction();
-            transaction.AddCondition(Condition.StringEqual(key, ToRedisValue(current)));
+            transaction.AddCondition(Condition.HashEqual(GetHashName<T>(CURRENT_SET), key, ToRedisValue(current)));
 
-            _ = transaction.KeyDeleteAsync(key);
+            _ = transaction.HashDeleteAsync(GetHashName<T>(CURRENT_SET), key);
 
             if (!await transaction.ExecuteAsync()) return new StateError();
-
-            _ = database.HashDeleteAsync(GetHashName<T>(CURRENT_SET), key);
 
             return new Ok();
         }
@@ -160,7 +154,7 @@ namespace StateStores.Redis
 
         public async Task<StateStoreResult> AddAsync<T>(string key, T next)
         {
-            var method = new Func<Task<StateStoreResult>>(() => 
+            var method = new Func<Task<StateStoreResult>>(() =>
                 AddInternalAsync(GetDatabase(), key, next));
             var res = await method
                 .Catch<Exception>(_ => new ConnectionError())
@@ -176,7 +170,7 @@ namespace StateStores.Redis
 
         public async Task<StateStoreResult> UpdateAsync<T>(string key, T current, T next)
         {
-            var method = new Func<Task<StateStoreResult>>(() => 
+            var method = new Func<Task<StateStoreResult>>(() =>
                 UpdateInternalAsync(GetDatabase(), key, current, next));
             var res = await method
                 .Catch<Exception>(_ => new ConnectionError())
@@ -192,7 +186,7 @@ namespace StateStores.Redis
 
         public async Task<StateStoreResult> RemoveAsync<T>(string key, T current)
         {
-            var method = new Func<Task<StateStoreResult>>(() => 
+            var method = new Func<Task<StateStoreResult>>(() =>
                 RemoveInternalAsync(GetDatabase(), key, current));
             var res = await method
                 .Catch<Exception>(_ => new ConnectionError())

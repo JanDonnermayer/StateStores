@@ -41,7 +41,8 @@ namespace StateStores
 
         /// <summary>
         /// If the specified async result is successful, returns it.
-        /// Else: Retries the operation within specific intervals
+        /// Else: Retries the operation within specified intervals of
+        /// exponentially increasing length of [currentTryCount] * 2 ^ [baseDelay]
         /// until the result is successful or the sequence is exhausted.
         /// </summary>
         public static Func<Task<StateStoreResult>> RetryIncrementallyOn<TError>(
