@@ -33,7 +33,7 @@ namespace StateStores.InMemory.Test
         [Test]
         public Task TestReplayFunctionalityAsync() => 
             GetStateStore()
-                .CreateProxy<SampleStates>("key2")
+                .CreateProxy<string>("key2")
                 .TestReplayFunctionalityAsync();
 
     }
