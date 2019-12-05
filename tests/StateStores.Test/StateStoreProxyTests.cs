@@ -4,13 +4,15 @@ using System;
 using NUnit.Framework;
 using System.Reactive.Linq;
 using System.Collections.Generic;
+using static StateStores.StateStoreResult;
+
 
 namespace StateStores.Test
 {
     public static class StateStoreProxyTests
     {
         static void AssertOk(StateStoreResult result) =>
-            Assert.IsInstanceOf(typeof(StateStoreResult.Ok), result);
+            Assert.IsInstanceOf(typeof(Ok), result);
 
         public enum SampleStates { state1, state2 }
 

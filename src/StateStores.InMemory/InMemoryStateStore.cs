@@ -7,6 +7,8 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
+using static StateStores.StateStoreResult;
+
 
 namespace StateStores.InMemory
 {
@@ -89,13 +91,13 @@ namespace StateStores.InMemory
 
             var map = GetStateQueue<T>().Last();
 
-            if (map.ContainsKey(key)) return new StateStoreResult.Error();
+            if (map.ContainsKey(key)) return new Error();
 
             PushStateMap<T>(m => m.SetItem(key, nextState));
 
             NotifyObservers<T>();
 
-            return new StateStoreResult.Ok();
+            return new Ok();
         }
 
         public async Task<StateStoreResult> UpdateAsync<T>(string key, T currentState, T nextState)
@@ -104,14 +106,14 @@ namespace StateStores.InMemory
 
             var map = GetStateQueue<T>().Last();
 
-            if (!map.TryGetValue(key, out var val)) return new StateStoreResult.Error();
-            if (!val.Equals(currentState)) return new StateStoreResult.Error();
+            if (!map.TryGetValue(key, out var val)) return new Error();
+            if (!val.Equals(currentState)) return new Error();
 
             PushStateMap<T>(m => m.SetItem(key, nextState));
 
             NotifyObservers<T>();
 
-            return new StateStoreResult.Ok();
+            return new Ok();
         }
 
 
@@ -121,14 +123,14 @@ namespace StateStores.InMemory
 
             var map = GetStateQueue<T>().Last();
 
-            if (!map.TryGetValue(key, out var val)) return new StateStoreResult.Error();
-            if (!val.Equals(currentState)) return new StateStoreResult.Error();
+            if (!map.TryGetValue(key, out var val)) return new Error();
+            if (!val.Equals(currentState)) return new Error();
 
             PushStateMap<T>(m => m.Remove(key));
 
             NotifyObservers<T>();
 
-            return new StateStoreResult.Ok();
+            return new Ok();
         }
 
         public IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>() =>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using static StateStores.StateStoreResult;
 
 namespace StateStores
 {
@@ -46,7 +47,7 @@ namespace StateStores
         public static Func<Task<StateStoreResult>> RetryIncrementallyOn<TError>(
             this Func<Task<StateStoreResult>> source,
             int baseDelayMs = 100,
-            int retryCount = 5) where TError : StateStoreResult.Error
+            int retryCount = 5) where TError : Error
         {
             if (source is null)
                 throw new ArgumentNullException(nameof(source));

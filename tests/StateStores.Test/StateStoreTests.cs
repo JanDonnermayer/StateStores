@@ -3,6 +3,8 @@ using System.Linq;
 using System;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using static StateStores.StateStoreResult;
+
 
 namespace StateStores.Test
 {
@@ -10,10 +12,10 @@ namespace StateStores.Test
     public static class StateStoreTests
     {
         static void AssertOk(StateStoreResult result) =>
-            Assert.IsInstanceOf(typeof(StateStoreResult.Ok), result);
+            Assert.IsInstanceOf(typeof(Ok), result);
 
         static void AssertError(StateStoreResult result) =>
-            Assert.IsInstanceOf(typeof(StateStoreResult.Error), result);
+            Assert.IsInstanceOf(typeof(Error), result);
 
         public static async Task TestBasicFunctionalityAsync(this IStateStore store, string key)
         {
