@@ -68,11 +68,18 @@ namespace StateStores.Redis
 
         static ImmutableDictionary<string, T> DictionaryFromValues<T>(HashEntry[] entries) =>
             entries
-                .Select(_ => new KeyValuePair<string, T>(_.Name, FromRedisValue<T>(_.Value) ))
+                .Select(_ => new KeyValuePair<string, T>(_.Name, FromRedisValue<T>(_.Value)))
                 .ToImmutableDictionary();
 
         private static RedisValue ToRedisValue<T>(T value) =>
-            JsonConvert.SerializeObject(value);
+            value switch
+            {
+                int v => v,
+                long v => v,
+                string v => v,
+                double v => v,
+                var v => JsonConvert.SerializeObject(v)
+            };
 
         private static T FromRedisValue<T>(RedisValue value) =>
             value.IsNullOrEmpty switch
@@ -106,7 +113,7 @@ namespace StateStores.Redis
 
             _ = transaction.StringSetAsync(key, ToRedisValue(next));
 
-            if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
+            if (!await transaction.ExecuteAsync()) return new StateStoreResult.StateError();
 
             _ = database.HashSetAsync(GetHashName<T>(CURRENT_SET),
                 new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
@@ -121,7 +128,7 @@ namespace StateStores.Redis
 
             _ = transaction.StringSetAsync(key, ToRedisValue(next));
 
-            if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
+            if (!await transaction.ExecuteAsync()) return new StateStoreResult.StateError();
 
             _ = database.HashSetAsync(GetHashName<T>(CURRENT_SET),
                 new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
@@ -136,7 +143,7 @@ namespace StateStores.Redis
 
             _ = transaction.KeyDeleteAsync(key);
 
-            if (!await transaction.ExecuteAsync()) return new StateStoreResult.Error();
+            if (!await transaction.ExecuteAsync()) return new StateStoreResult.StateError();
 
             _ = database.HashDeleteAsync(GetHashName<T>(CURRENT_SET), key);
 
@@ -151,24 +158,48 @@ namespace StateStores.Redis
 
         public async Task<StateStoreResult> AddAsync<T>(string key, T next)
         {
-            var res = await AddInternalAsync(GetDatabase(), key, next)
+            var method = new Func<Task<StateStoreResult>>(() => 
+                AddInternalAsync(GetDatabase(), key, next));
+            var res = await method
+                .Catch<Exception>(_ => new StateStoreResult.ConnectionError())
+                .RetryIncrementallyOn<StateStoreResult.ConnectionError>(
+                    baseDelayMs: 100,
+                    retryCount: 5)
+                .Invoke()
                 .ConfigureAwait(false);
+
             if (res is StateStoreResult.Ok) _ = NotifyObserversAsync<T>();
             return res;
         }
 
         public async Task<StateStoreResult> UpdateAsync<T>(string key, T current, T next)
         {
-            var res = await UpdateInternalAsync(GetDatabase(), key, current, next)
+            var method = new Func<Task<StateStoreResult>>(() => 
+                UpdateInternalAsync(GetDatabase(), key, current, next));
+            var res = await method
+                .Catch<Exception>(_ => new StateStoreResult.ConnectionError())
+                .RetryIncrementallyOn<StateStoreResult.ConnectionError>(
+                    baseDelayMs: 100,
+                    retryCount: 5)
+                .Invoke()
                 .ConfigureAwait(false);
+
             if (res is StateStoreResult.Ok) _ = NotifyObserversAsync<T>();
             return res;
         }
 
         public async Task<StateStoreResult> RemoveAsync<T>(string key, T current)
         {
-            var res = await RemoveInternalAsync(GetDatabase(), key, current)
+            var method = new Func<Task<StateStoreResult>>(() => 
+                RemoveInternalAsync(GetDatabase(), key, current));
+            var res = await method
+                .Catch<Exception>(_ => new StateStoreResult.ConnectionError())
+                .RetryIncrementallyOn<StateStoreResult.ConnectionError>(
+                    baseDelayMs: 100,
+                    retryCount: 5)
+                .Invoke()
                 .ConfigureAwait(false);
+
             if (res is StateStoreResult.Ok) _ = NotifyObserversAsync<T>();
             return res;
         }

@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build.blazor",
-            "program": "${workspaceFolder}/app/StateStores.App.Blazor/bin/Debug/netcoreapp3.1/StateStores.App.Blazor.dll",
+            "program": "${workspaceFolder}/app/StateStores.App.Blazor/bin/Debug/netcoreapp3.0/StateStores.App.Blazor.dll",
             "args": [],
             "cwd": "${workspaceFolder}/app/StateStores.App.Blazor",
             "console": "internalConsole",

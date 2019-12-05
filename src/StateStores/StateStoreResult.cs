@@ -4,8 +4,11 @@
     {
         public sealed class Ok : StateStoreResult { }
 
-        public sealed class Error : StateStoreResult { }
-        
+        public class Error : StateStoreResult { }
+
+        public class StateError : Error { }
+
+        public class ConnectionError : Error { }        
     }
 
 }

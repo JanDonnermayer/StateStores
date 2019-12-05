@@ -1,0 +1,52 @@
+@inject IStateStore stateStore
+@typeparam TState
+@implements IDisposable
+
+<h1>StateView @typeof(TState).Name</h1>
+
+
+@if (states == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var state in states)
+            {
+                <tr>
+                    <td>@state.Key</td>
+                    <td>@state.Value</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    private IDictionary<string, TState> states;
+
+    private IDisposable disposable;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+       
+        disposable = stateStore           
+            .GetObservable<TState>()
+            .Do(_ => states = _.Last())
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(_ => StateHasChanged());
+    }
+
+    public void Dispose() => disposable?.Dispose();
+
+}

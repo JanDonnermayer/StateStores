@@ -31,7 +31,7 @@
     {
         await base.OnInitializedAsync();
 
-        proxy = stateStore.CreateProxy<int>(GetType().AssemblyQualifiedName + "_" + Name);
+        proxy = stateStore.CreateProxy<int>(GetType().FullName + "_" + Name);
 
         disposable = proxy           
             .OnNext()
