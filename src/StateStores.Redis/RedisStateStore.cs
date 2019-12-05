@@ -74,14 +74,7 @@ namespace StateStores.Redis
                 .ToImmutableDictionary();
 
         private static RedisValue ToRedisValue<T>(T value) =>
-            value switch
-            {
-                int v => v,
-                long v => v,
-                string v => v,
-                double v => v,
-                var v => JsonConvert.SerializeObject(v)
-            };
+            JsonConvert.SerializeObject(value);
 
         private static T FromRedisValue<T>(RedisValue value) =>
             value.IsNullOrEmpty switch

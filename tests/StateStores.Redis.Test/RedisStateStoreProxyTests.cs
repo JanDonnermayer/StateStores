@@ -28,7 +28,7 @@ namespace StateStores.Redis.Test
         {
             using var store = RedisStateStoreFactory.GetStateStore();
             await store
-                .CreateProxy<SampleStates>(key: Guid.NewGuid().ToString())
+                .CreateProxy<string>(key: Guid.NewGuid().ToString())
                 .TestReplayFunctionalityAsync();
         }
     }

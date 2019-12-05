@@ -14,12 +14,10 @@ namespace StateStores.Test
         static void AssertOk(StateStoreResult result) =>
             Assert.IsInstanceOf(typeof(Ok), result);
 
-        public enum SampleStates { state1, state2 }
-
-        public static async Task TestBasicFunctionalityAsync(this IStateStoreProxy<SampleStates> proxy)
+        public static async Task TestBasicFunctionalityAsync(this IStateStoreProxy<string> proxy)
         {
-            const SampleStates SAMPLE_STATE_1 = SampleStates.state1;
-            const SampleStates SAMPLE_STATE_2 = SampleStates.state2;
+            const string SAMPLE_STATE_1 = "state1";
+            const string SAMPLE_STATE_2 = "state2";
 
             const int EXPECTED_ADD_NOTIFICATION_COUNT = 1;
             const int EXPECTED_UPDATE_NOTIFICATION_COUNT = 1;
@@ -60,9 +58,9 @@ namespace StateStores.Test
                 mut_ActualRemoveNotificationCount);
         }
 
-        public static async Task TestReplayFunctionalityAsync(this IStateStoreProxy<SampleStates> proxy)
+        public static async Task TestReplayFunctionalityAsync(this IStateStoreProxy<string> proxy)
         {
-            const SampleStates SAMPLE_STATE_1 = SampleStates.state1;
+            const string SAMPLE_STATE_1 = "state1";
 
             const int EXPECTED_ADD_NOTIFICATION_COUNT = 3;
 
