@@ -21,7 +21,7 @@ namespace StateStores.Redis.Test
         {          
             using var store = RedisStateStoreFactory.GetStateStore();
             await store.TestParallelFunctionalityAsync(
-                parallelWorkersCount: 20,
+                parallelWorkersCount: 30,
                 transactionsBlockCount: 100
             );
         }

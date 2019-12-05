@@ -40,7 +40,7 @@ namespace StateStores.Test
         }
 
         public static async Task TestParallelFunctionalityAsync(
-            this IStateStore store, int parallelWorkersCount = 1, int transactionsBlockCount = 1000)
+            this IStateStore store, int parallelWorkersCount = 30, int transactionsBlockCount = 100)
         {
 
             await Task.WhenAll(Enumerable
@@ -51,6 +51,5 @@ namespace StateStores.Test
                         await TestBasicFunctionalityAsync(store, i.ToString());
                 }));
         }
-
     }
 }
