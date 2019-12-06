@@ -12,9 +12,9 @@ namespace StateStores
 
         /// <summary>
         /// Executes the provided function within a try-catch-block.
-        /// If an exception occurs, the specified <paramref name="resultMapper"/>
+        /// If an exception of <typeparam name="TException"/> occurs,
+        /// the specified <paramref name="resultMapper"/>
         /// is used to create the result.
-        /// Else: an ok-result is returned.
         /// </summary>
         public static Func<Task<StateStoreResult>> Catch<TException>(this Func<Task<StateStoreResult>> source,
             Func<TException, StateStoreResult> resultMapper) 
@@ -40,10 +40,11 @@ namespace StateStores
         }
 
         /// <summary>
-        /// If the specified async result is successful, returns it.
-        /// Else: Retries the operation within specified intervals of
+        /// If the specified result is of type <typeparam name="TError" />:
+        /// Retries the operation within specified intervals of
         /// exponentially increasing length of [currentTryCount] * 2 ^ [baseDelay]
-        /// until the result is successful or the sequence is exhausted.
+        /// until the result is not of type <typeparam name="TError" />,
+        /// or the sequence is exhausted.
         /// </summary>
         public static Func<Task<StateStoreResult>> RetryIncrementallyOn<TError>(
             this Func<Task<StateStoreResult>> source,
