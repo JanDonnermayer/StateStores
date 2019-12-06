@@ -1,10 +1,11 @@
-﻿@page "/counter/{name}"
+﻿@page "/state/{name}"
 @inject IStateStore stateStore
 @implements IDisposable
 
-<h1>Counter @Name</h1>
+<h1>State of @Name</h1>
 
-<p>Current state: @currentState</p>
+<p>Current state: </p>
+<ColoredLabel Text="@currentState"/>
 
 <button class="btn btn-primary" @onclick="IncrementCountAsync">Click me</button>
 
