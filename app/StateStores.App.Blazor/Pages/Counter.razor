@@ -4,7 +4,7 @@
 
 <h1>Counter @Name</h1>
 
-<p>Current count: @currentCount</p>
+<p>Current state: @currentState</p>
 
 <button class="btn btn-primary" @onclick="IncrementCountAsync">Click me</button>
 
@@ -13,29 +13,27 @@
     [Parameter]
     public string Name { get; set; }
 
-    private int currentCount = 0;
+    private string currentState = "";
 
-    private IStateStoreProxy<int> proxy;
+    private IStateStoreProxy<string> proxy;
 
     private IDisposable disposable;
 
     private async Task IncrementCountAsync()
     {
-       if (currentCount == 0) await proxy.AddAsync(0);
-       var limit = currentCount + 10000;
-       for (int i = currentCount; i < limit; i++)
-           if (await proxy.UpdateAsync(i, i + 1) is StateStoreResult.Error) return;
+       if (currentState == "") await proxy.AddAsync(Guid.NewGuid().ToString());
+       await proxy.UpdateAsync(currentState, Guid.NewGuid().ToString());
     }
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
-        proxy = stateStore.CreateProxy<int>(GetType().FullName + "_" + Name);
+        proxy = stateStore.CreateProxy<string>(Name);
 
         Interlocked.Exchange(ref disposable, proxy           
             .OnNext()
-            .Do(_ => currentCount = _)
+            .Do(_ => currentState = _)
             .ObserveOn(SynchronizationContext.Current)
             .Subscribe(_ => StateHasChanged()))
             ?.Dispose();

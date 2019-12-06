@@ -22,8 +22,8 @@ else
             @foreach (var state in states.OrderBy(i => i.Key))
             {
                 <tr>
-                    <td>@state.Key</td>
-                    <td>@state.Value</td>
+                    <td><ColoredLabel Text="@state.Key.ToString()"/></td>
+                    <td><ColoredLabel Text="@state.Value.ToString()"/></td>
                 </tr>
             }
         </tbody>
