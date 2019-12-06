@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using System.Reactive.Linq;
 using Newtonsoft.Json;
 using System.Linq;
-using System.Threading;
-using System.Reactive.Concurrency;
 using System.Collections.Generic;
 
 using static StateStores.StateStoreResult;
@@ -40,10 +38,8 @@ namespace StateStores.Redis
         private static string GetChannelName<TState>() =>
            "udpdate_channel_" + typeof(TState).FullName;
 
-        private const int CURRENT_SET = 0;
-
-        private static string GetHashName<TState>(int index) =>
-           $"set_{typeof(TState).FullName}_{index.ToString()}";
+        private static string GetHashName<TState>() =>
+           $"set_{typeof(TState).FullName}";
 
         private async Task NotifyObserversAsync<TState>() =>
             await GetSubscriber().PublishAsync(
@@ -104,9 +100,9 @@ namespace StateStores.Redis
         static async Task<StateStoreResult> AddInternalAsync<T>(IDatabase database, string key, T next)
         {
             var transaction = database.CreateTransaction();
-            transaction.AddCondition(Condition.HashNotExists(GetHashName<T>(CURRENT_SET), key));
+            transaction.AddCondition(Condition.HashNotExists(GetHashName<T>(), key));
 
-            _ = transaction.HashSetAsync(GetHashName<T>(CURRENT_SET),
+            _ = transaction.HashSetAsync(GetHashName<T>(),
                 new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
 
             if (!await transaction.ExecuteAsync()) return new StateError();
@@ -117,9 +113,9 @@ namespace StateStores.Redis
         static async Task<StateStoreResult> UpdateInternalAsync<T>(IDatabase database, string key, T current, T next)
         {
             var transaction = database.CreateTransaction();
-            transaction.AddCondition(Condition.HashEqual(GetHashName<T>(CURRENT_SET), key, ToRedisValue(current)));
+            transaction.AddCondition(Condition.HashEqual(GetHashName<T>(), key, ToRedisValue(current)));
 
-            _ = transaction.HashSetAsync(GetHashName<T>(CURRENT_SET),
+            _ = transaction.HashSetAsync(GetHashName<T>(),
                 new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
 
             if (!await transaction.ExecuteAsync()) return new StateError();
@@ -130,9 +126,9 @@ namespace StateStores.Redis
         static async Task<StateStoreResult> RemoveInternalAsync<T>(IDatabase database, string key, T current)
         {
             var transaction = database.CreateTransaction();
-            transaction.AddCondition(Condition.HashEqual(GetHashName<T>(CURRENT_SET), key, ToRedisValue(current)));
+            transaction.AddCondition(Condition.HashEqual(GetHashName<T>(), key, ToRedisValue(current)));
 
-            _ = transaction.HashDeleteAsync(GetHashName<T>(CURRENT_SET), key);
+            _ = transaction.HashDeleteAsync(GetHashName<T>(), key);
 
             if (!await transaction.ExecuteAsync()) return new StateError();
 
@@ -196,14 +192,14 @@ namespace StateStores.Redis
         public IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>() =>
             GetObservable(GetChannelName<T>())
                 .Select(_ => Observable.FromAsync(async () => // React to Messages
-                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>(CURRENT_SET)))
+                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>()))
                 ))
                 .Concat()
-                .Merge(Observable.Return( // Start with empty set
+                .Merge(Observable.Return( // Start with empty set (states appear added for new subscribers)
                     ImmutableDictionary<string, T>.Empty)
                 )
                 .Merge(Observable.FromAsync(async () => // Pass initial set
-                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>(CURRENT_SET)))
+                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>()))
                 ))
                 .Buffer(2, 1)
                 .Replay(1)
