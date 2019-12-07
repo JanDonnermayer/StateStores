@@ -9,9 +9,9 @@ namespace StateStores.App.Blazor
         /// </summary>
         public static string GenerateFromText(string text)
         {
-            var code = text.Select(c => (int)c).Sum() ^ 358;
+            var code = (text ?? string.Empty).Select(c => (int)c).Sum() ^ 358;
             return $"color: rgb({(code ^ 126) % 255}, " +
-            $"{(code ^ 226) % 255}, {(code ^ 656) % 255 })";
+            $"{(code ^ 226) % 255}, {(code ^ 656) % 255 });";
         }
     }
 }

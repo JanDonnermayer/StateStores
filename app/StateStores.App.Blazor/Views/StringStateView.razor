@@ -1,91 +1,112 @@
 @inject IStateStore stateStore
 @implements IDisposable
 
-<h1>State of @Name</h1>
+<h1 style="float: left; margin-right: 15px">State of</h1>
+<h1 style="@GenerateFromText(Name)">@Name</h1>
 
-@if(String.Equals(currentState, NO_STATE))
+@if(String.Equals(CurrentState, NO_STATE))
 {
    <button class="btn btn-primary" @onclick="AddAsync">Add</button>
 }
 else
 {
    <div class="form-group">
-      <label>Current state:</label>
-      <label style="@ColorGenerator" Text=@currentState />
-      <label for="inputNextState">Next state:</label>
-      <input type="text" class="form-control" id="inputNextState" @bind="@nextState" />
+      <label for="inputCurrentState">Current:</label>
+      <input style="@GenerateFromText(CurrentState)" 
+         type="text" class="form-control" 
+         id="inputCurrentState" @bind="@CurrentState" 
+         readonly />
+      <br />
+      <label for="inputNextState">Next:</label>
+      <input style="@GenerateFromText(NextState)" 
+             type="text" class="form-control" 
+             id="inputNextState" @bind="@NextState" />
+      <br />
+      <button class="btn btn-primary" @onclick="UpdateAsync">Update</button>
+      <button class="btn btn-danger" @onclick="RemoveAsync">Delete</button>
    </div>
-
-   <button class="btn btn-primary" @onclick="UpdateAsync">Update</button>
-   <button class="btn btn-danger" @onclick="RemoveAsync">Delete</button>
 }
 
 
 @code {
 
-    [Parameter]
-    public string Name { get; set; }
+   [Parameter]
+   public string Name { get; set; }
 
-    private const string NO_STATE = "NO_STATE";
+   private IStateStoreProxy<string> proxy;
 
-    private string currentState = NO_STATE;
+   private IDisposable disposable;
 
-    private string nextState = NO_STATE;
+   private const string NO_STATE = "NO_STATE";
 
-    private IStateStoreProxy<string> proxy;
+   private string _currentState;
+   private string CurrentState { 
+       get => _currentState;
+       set { 
+          _currentState = value;
+          TryStateHasChanged();
+      }
+   }
 
-    private IDisposable disposable;
+   private string _nextState;
+   private string NextState { 
+       get => _nextState;
+       set { 
+          _nextState = value;
+          TryStateHasChanged();
+      }
+   }
+
+   private void TryStateHasChanged()
+   {
+      try
+      {
+         StateHasChanged();
+      }
+      catch (ObjectDisposedException)
+      {
+         return;
+      }
+   }
+   
+   private void OnUpdateState(string state)
+   {
+      _currentState = state;
+      _nextState = Guid.NewGuid().ToString();
+      TryStateHasChanged();
+   }
+
+   private async Task AddAsync() 
+   {
+      await proxy.AddAsync(NextState);
+   }
+
+   private async Task UpdateAsync()
+   {
+      await proxy.UpdateAsync(CurrentState, NextState);
+   }
+
+   private async Task RemoveAsync()
+   {
+      await proxy.RemoveAsync(CurrentState);
+   }
 
 
-    private void TryStateHasChanged()
-    {
-       try
-       {
-          StateHasChanged();
-       }
-       catch (ObjectDisposedException)
-       {
-          return;
-       }
-    }
-    
-    private void UpdateState(string state)
-    {
-       currentState = state;
-       nextState = Guid.NewGuid().ToString();
-       TryStateHasChanged();
-    }
+   protected override async Task OnParametersSetAsync()
+   {
+      await base.OnParametersSetAsync();
 
-    private async Task AddAsync() 
-    {
-       await proxy.AddAsync(Guid.NewGuid().ToString());
-    }
+      proxy = stateStore.CreateProxy<string>(Name);
 
-    private async Task UpdateAsync()
-    {
-       await proxy.UpdateAsync(currentState, nextState);
-    }
+      disposable = proxy
+         .OnNext()           
+         .Merge(proxy.OnRemove.Select(_ => NO_STATE))
+         .Merge(Observable.Return(NO_STATE))
+         .ObserveOn(SynchronizationContext.Current)
+         .Subscribe(OnUpdateState);
+   }
 
-    private async Task RemoveAsync()
-    {
-       await proxy.RemoveAsync(currentState);
-    }
-
-
-    protected override async Task OnParametersSetAsync()
-    {
-        await base.OnParametersSetAsync();
-
-        proxy = stateStore.CreateProxy<string>(Name);
-
-        disposable = proxy
-            .OnNext()           
-            .Merge(proxy.OnRemove.Select(_ => NO_STATE))
-            .ObserveOn(SynchronizationContext.Current)
-            .Subscribe(UpdateState);
-    }
-
-    public void Dispose() => disposable?.Dispose();
+   public void Dispose() => disposable?.Dispose();
 
 }
 
