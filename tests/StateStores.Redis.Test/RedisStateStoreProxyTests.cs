@@ -14,6 +14,16 @@ namespace StateStores.Redis.Test
         [SetUp]
         public void Setup() => RedisStateStoreFactory.FlushAllDatabases();
 
+
+        [Test]
+        public async Task TestBasicFunctionalityAsync()
+        {
+            using var store = RedisStateStoreFactory.GetStateStore();
+            await store
+                .CreateProxy<string>(key: Guid.NewGuid().ToString())
+                .TestBasicFunctionalityAsync();
+        }
+
         [Test]
         public async Task TestReactiveFunctionalityAsync()
         {

@@ -1,3 +1,11 @@
-@page "/statePageString"
+﻿@page "/state/{name}"
 
-<StateView TState="System.String"/>
+<StringStateView Name=@Name />
+
+
+@code {
+
+    [Parameter]
+    public string Name { get; set; }
+    
+}

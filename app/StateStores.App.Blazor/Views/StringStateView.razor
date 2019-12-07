@@ -1,0 +1,91 @@
+@inject IStateStore stateStore
+@implements IDisposable
+
+<h1>State of @Name</h1>
+
+@if(String.Equals(currentState, NO_STATE))
+{
+   <button class="btn btn-primary" @onclick="AddAsync">Add</button>
+}
+else
+{
+   <div class="form-group">
+      <label>Current state:</label>
+      <label style="@ColorGenerator" Text=@currentState />
+      <label for="inputNextState">Next state:</label>
+      <input type="text" class="form-control" id="inputNextState" @bind="@nextState" />
+   </div>
+
+   <button class="btn btn-primary" @onclick="UpdateAsync">Update</button>
+   <button class="btn btn-danger" @onclick="RemoveAsync">Delete</button>
+}
+
+
+@code {
+
+    [Parameter]
+    public string Name { get; set; }
+
+    private const string NO_STATE = "NO_STATE";
+
+    private string currentState = NO_STATE;
+
+    private string nextState = NO_STATE;
+
+    private IStateStoreProxy<string> proxy;
+
+    private IDisposable disposable;
+
+
+    private void TryStateHasChanged()
+    {
+       try
+       {
+          StateHasChanged();
+       }
+       catch (ObjectDisposedException)
+       {
+          return;
+       }
+    }
+    
+    private void UpdateState(string state)
+    {
+       currentState = state;
+       nextState = Guid.NewGuid().ToString();
+       TryStateHasChanged();
+    }
+
+    private async Task AddAsync() 
+    {
+       await proxy.AddAsync(Guid.NewGuid().ToString());
+    }
+
+    private async Task UpdateAsync()
+    {
+       await proxy.UpdateAsync(currentState, nextState);
+    }
+
+    private async Task RemoveAsync()
+    {
+       await proxy.RemoveAsync(currentState);
+    }
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        proxy = stateStore.CreateProxy<string>(Name);
+
+        disposable = proxy
+            .OnNext()           
+            .Merge(proxy.OnRemove.Select(_ => NO_STATE))
+            .ObserveOn(SynchronizationContext.Current)
+            .Subscribe(UpdateState);
+    }
+
+    public void Dispose() => disposable?.Dispose();
+
+}
+

@@ -1,19 +1,9 @@
 
-<p style=@GenerateStyleFromText(this.Text)>@Text</p>
+<p style=@GenerateFromText(this.Text)>@Text</p>
 
 @code {
 
     [Parameter]
     public string Text {get; set;}
-
-    /// <summary>
-    /// Returns a color based on the content of the specified string
-    /// </summary>
-    private static string GenerateStyleFromText(string text)
-    {
-        var code = text.Select(c => (int)c).Sum() ^ 358;
-        return $"color: rgb({(code ^ 126) % 255}, " +
-        $"{(code ^ 226) % 255}, {(code ^ 656) % 255 })";
-    }
 
 }

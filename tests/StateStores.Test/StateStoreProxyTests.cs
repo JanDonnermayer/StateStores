@@ -22,16 +22,27 @@ namespace StateStores.Test
             const int EXPECTED_ADD_NOTIFICATION_COUNT = 1;
             const int EXPECTED_UPDATE_NOTIFICATION_COUNT = 1;
             const int EXPECTED_REMOVE_NOTIFICATION_COUNT = 1;
-
-            const int OBSERVER_DELAY_MS = 200;
+            const int EXPECTED_NEXT_NOTIFICATION_COUNT = 2;
+            const int EXPECTED_PREVIOUS_NOTIFICATION_COUNT = 2;
 
             int mut_ActualAddNotificationCount = 0;
             int mut_ActualUpdateNotificationCount = 0;
             int mut_ActualRemoveNotificationCount = 0;
+            int mut_ActualNextNotificationCount = 0;
+            int mut_ActualPreviousNotificationCount = 0;
 
-            proxy.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
-            proxy.OnUpdate.Subscribe(_ => mut_ActualUpdateNotificationCount += 1);
-            proxy.OnRemove.Subscribe(_ => mut_ActualRemoveNotificationCount += 1);
+            proxy.OnAdd
+                .Subscribe(_ => mut_ActualAddNotificationCount += 1);
+            proxy.OnUpdate
+                .Subscribe(_ => mut_ActualUpdateNotificationCount += 1);
+            proxy.OnRemove
+                .Subscribe(_ => mut_ActualRemoveNotificationCount += 1);
+            proxy.OnNext()
+                .Subscribe(_ => mut_ActualNextNotificationCount += 1);
+            proxy.OnPrevious()
+                .Subscribe(_ => mut_ActualPreviousNotificationCount += 1);
+
+            const int OBSERVER_DELAY_MS = 200;
 
             // Can set 
             AssertOk(await proxy.AddAsync(SAMPLE_STATE_1));
@@ -56,6 +67,14 @@ namespace StateStores.Test
             Assert.AreEqual(
                 EXPECTED_REMOVE_NOTIFICATION_COUNT,
                 mut_ActualRemoveNotificationCount);
+
+            Assert.AreEqual(
+                EXPECTED_NEXT_NOTIFICATION_COUNT,
+                mut_ActualNextNotificationCount);
+
+            Assert.AreEqual(
+                EXPECTED_PREVIOUS_NOTIFICATION_COUNT,
+                mut_ActualPreviousNotificationCount);
         }
 
         public static async Task TestReplayFunctionalityAsync(this IStateStoreProxy<string> proxy)
