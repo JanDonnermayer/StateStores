@@ -13,14 +13,14 @@ else
    <div class="form-group">
       <label for="inputCurrentState">Current:</label>
       <input style="@GenerateFromText(CurrentState)" 
-         type="text" class="form-control" 
-         id="inputCurrentState" @bind="@CurrentState" 
-         readonly />
+            type="text" class="form-control" 
+            id="inputCurrentState" @bind="@CurrentState" 
+            readonly />
       <br />
       <label for="inputNextState">Next:</label>
       <input style="@GenerateFromText(NextState)" 
-             type="text" class="form-control" 
-             id="inputNextState" @bind="@NextState" />
+            type="text" class="form-control" 
+            id="inputNextState" @bind="@NextState" />
       <br />
       <button class="btn btn-primary" @onclick="UpdateAsync">Update</button>
       <button class="btn btn-danger" @onclick="RemoveAsync">Delete</button>
@@ -57,6 +57,7 @@ else
       }
    }
 
+   [System.Diagnostics.DebuggerStepThrough]
    private void TryStateHasChanged()
    {
       try

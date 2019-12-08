@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using StateStores.App.Blazor.Data;
+using StateStores.App.Blazor.Services;
 using StateStores.InMemory;
 using StateStores.Redis;
 
@@ -32,14 +33,13 @@ namespace StateStores.App.Blazor
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
 
-
             services.AddSingleton<IStateStore>(Configuration["Redis"] switch
             {
                 string server => new RedisStateStore(server),
                 _ => new InMemoryStateStore()
             });
 
-
+            services.AddHostedService<StateReactor>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
