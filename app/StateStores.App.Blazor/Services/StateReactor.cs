@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
@@ -21,61 +22,38 @@ namespace StateStores.App.Blazor.Services
             this.stateStore = stateStore ?? throw new System.ArgumentNullException(nameof(stateStore));
         }
 
-        private IDisposable RegisterWoehrmann()
-        {
-            var proxy = stateStore
-                .CreateProxy<string>("Woehrmann");
-
-            Action<string> Respond(string response) =>
-                message => _ = proxy.UpdateAsync(message, response);
-
-            IEnumerable<IDisposable> _Register()
-            {
-                yield return proxy
-                    .OnNext("geht".Equals)
-                    .Delay(TimeSpan.FromSeconds(1))
-                    .Do(Respond("mois?"))
-                    .Subscribe();
-
-                yield return proxy
-                    .OnNext("was".Equals)
-                    .Delay(TimeSpan.FromSeconds(1))
-                    .Do(Respond("geht"))
-                    .Subscribe();
-
-                yield return proxy
-                    .OnNext("Hey".Equals)
-                    .Delay(TimeSpan.FromSeconds(1))
-                    .Do(Respond("was"))
-                    .Subscribe();
-            }
-
-            return new CompositeDisposable(_Register());
-        }
-
-        private IDisposable RegisterPulse(string stateName)
-        {
-            var proxy = stateStore
-                .CreateProxy<string>(stateName);
-
-            Action<string> Respond() =>
-                message => _ = proxy.UpdateAsync(message, Guid.NewGuid().ToString());
-
-            return proxy
-                .OnNext()
-                .Delay(TimeSpan.FromSeconds(1))
-                .Do(Respond())
+        private IDisposable RegisterChatBehaviour(string stateName, string trigger, TimeSpan frequency) =>
+            stateStore
+                .CreateChannel<string>(stateName)
+                .CreateHandle(trigger)
+                .Delay(frequency)
+                .Update("Jo,")
+                .Delay(frequency)
+                .Update("was")
+                .Delay(frequency)
+                .Update("geht")
+                .Delay(frequency)
+                .Update("mois?")
+                .Delay(frequency)
+                .Remove()
                 .Subscribe();
-        }
+
+        private IDisposable RegisterPulseBehaviour(string stateName, TimeSpan frequency) =>
+            stateStore
+                .CreateChannel<string>(stateName)
+                .CreateHandle()
+                .Delay(frequency)
+                .Update(_ => Guid.NewGuid().ToString())
+                .Subscribe();
 
 
         #region  Implementation of IHostedService
 
         Task IHostedService.StartAsync(CancellationToken cancellationToken)
         {
-            mut_disposable = RegisterWoehrmann()
-                .Append(RegisterPulse("Jan"))
-                .Append(RegisterPulse("Elisa"));
+            mut_disposable = RegisterChatBehaviour("Tobi", "Hey", TimeSpan.FromSeconds(1))
+                .Append(RegisterPulseBehaviour("Jan", TimeSpan.FromSeconds(1)))
+                .Append(RegisterPulseBehaviour("Elisa", TimeSpan.FromSeconds(1)));
             return Task.CompletedTask;
         }
 

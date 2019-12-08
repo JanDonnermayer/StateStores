@@ -33,7 +33,7 @@ else
    [Parameter]
    public string Name { get; set; }
 
-   private IStateStoreProxy<string> proxy;
+   private IStateChannel<string> channel;
 
    private IDisposable disposable;
 
@@ -79,17 +79,17 @@ else
 
    private async Task AddAsync() 
    {
-      await proxy.AddAsync(NextState);
+      await channel.AddAsync(NextState);
    }
 
    private async Task UpdateAsync()
    {
-      await proxy.UpdateAsync(CurrentState, NextState);
+      await channel.UpdateAsync(CurrentState, NextState);
    }
 
    private async Task RemoveAsync()
    {
-      await proxy.RemoveAsync(CurrentState);
+      await channel.RemoveAsync(CurrentState);
    }
 
 
@@ -97,11 +97,11 @@ else
    {
       await base.OnParametersSetAsync();
 
-      proxy = stateStore.CreateProxy<string>(Name);
+      channel = stateStore.CreateChannel<string>(Name);
 
-      disposable = proxy
-         .OnNext()           
-         .Merge(proxy.OnRemove.Select(_ => NO_STATE))
+      disposable = channel
+         .OnNext()     
+         .Merge(channel.OnRemove.Select(_ => NO_STATE))
          .Merge(Observable.Return(NO_STATE))
          .ObserveOn(SynchronizationContext.Current)
          .Subscribe(OnUpdateState);

@@ -4,12 +4,12 @@ using NUnit.Framework;
 using StackExchange.Redis;
 using StateStores.Redis;
 using StateStores.Test;
-using static StateStores.Test.StateStoreProxyTests;
+using static StateStores.Test.StateChannelTests;
 
 namespace StateStores.Redis.Test
 {
     [TestFixture]
-    public class RedisStateStoreProxyTests
+    public class RedisStateChannelTests
     {
         [SetUp]
         public void Setup() => RedisStateStoreFactory.FlushAllDatabases();
@@ -20,7 +20,7 @@ namespace StateStores.Redis.Test
         {
             using var store = RedisStateStoreFactory.GetStateStore();
             await store
-                .CreateProxy<string>(key: Guid.NewGuid().ToString())
+                .CreateChannel<string>(key: Guid.NewGuid().ToString())
                 .TestBasicFunctionalityAsync();
         }
 
@@ -29,7 +29,7 @@ namespace StateStores.Redis.Test
         {
             using var store = RedisStateStoreFactory.GetStateStore();
             await store
-                .CreateProxy<int>(key: Guid.NewGuid().ToString())
+                .CreateChannel<int>(key: Guid.NewGuid().ToString())
                 .TestReactiveFunctionalityAsync(stateCount: 1000);
         }
 
@@ -38,7 +38,7 @@ namespace StateStores.Redis.Test
         {
             using var store = RedisStateStoreFactory.GetStateStore();
             await store
-                .CreateProxy<string>(key: Guid.NewGuid().ToString())
+                .CreateChannel<string>(key: Guid.NewGuid().ToString())
                 .TestReplayFunctionalityAsync();
         }
     }

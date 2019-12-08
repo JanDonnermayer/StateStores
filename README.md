@@ -18,21 +18,21 @@ enum States { S1, S2 };
 
 // ...
 
-var proxy = new RedisStateStore(server: "localhost:8080")
-    .CreateProxy<States>("state1");
+var channel = new RedisStateStore(server: "localhost:8080")
+    .CreateChannel<States>("state1");
 
 // Reactive-transit: S1 --> S2
-proxy
+channel
     .OnNext(States.S1.Equals)
-    .Subscribe(state => proxy.UpdateAsync(state, States.S2));
+    .Subscribe(state => channel.UpdateAsync(state, States.S2));
 
 // Reactive-transit: S2 --> {0}
-proxy
+channel
     .OnNext(States.S2.Equals)
-    .Subscribe(state => proxy.RemoveAsync(state));
+    .Subscribe(state => channel.RemoveAsync(state));
 
 // Imperative-transit: {0} --> S1
-await proxy.AddAsync(States.S1);
+await channel.AddAsync(States.S1);
 ```
 
 ## Dotnet CLI

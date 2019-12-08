@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -10,14 +10,39 @@ using System.Threading.Tasks;
 
 namespace StateStores
 {
-    public static class StateStoreProxy
+    public static class StateChannel
     {
-        public static IStateStoreProxy<TState> CreateProxy<TState>(this IStateStore store, string key) =>
-            new StateStoreProxyInstance<TState>(store, key);
+        public static IStateChannel<TState> CreateChannel<TState>(this IStateStore store, string key) =>
+            new Instance<TState>(store, key);
+
+
+        public static IObservable<TState> OnNext<TState>(this IStateChannel<TState> channel) =>
+            channel.OnAdd.Merge(channel.OnUpdate.Select(_ => _.currentState));
+
+        public static IObservable<TState> OnNext<TState>(this IStateChannel<TState> channel,
+            Func<TState, bool> condition) =>
+                channel.OnNext().Where(condition);
+
+        public static IObservable<TState> OnNext<TState>(this IStateChannel<TState> channel,
+            TState value) =>
+                channel.OnNext().Where(state => EqualityComparer<TState>.Default.Equals(state, value));
+
+
+        public static IObservable<TState> OnPrevious<TState>(this IStateChannel<TState> channel) =>
+            channel.OnRemove
+                .Merge(channel.OnUpdate
+                .Select(_ => _.previousState));
+        public static IObservable<TState> OnPrevious<TState>(this IStateChannel<TState> channel,
+            Func<TState, bool> condition) =>
+                channel.OnPrevious().Where(condition);
+
+        public static IObservable<TState> OnPrevious<TState>(this IStateChannel<TState> channel,
+            TState value) =>
+                channel.OnPrevious().Where(state => EqualityComparer<TState>.Default.Equals(state, value));
 
         #region  Private Types
 
-        private class StateStoreProxyInstance<TState> : IStateStoreProxy<TState>
+        private class Instance<TState> : IStateChannel<TState>
         {
             private readonly IStateStore store;
             private readonly string key;
@@ -28,7 +53,7 @@ namespace StateStores
                     .Select(_ => _.Reverse())
                     .Select(_ => (_.Skip(1).First(), _.First()));
 
-            public StateStoreProxyInstance(IStateStore store, string key)
+            public Instance(IStateStore store, string key)
             {
                 this.store = store ?? throw new ArgumentNullException(nameof(store));
                 this.key = key ?? throw new ArgumentNullException(nameof(key));

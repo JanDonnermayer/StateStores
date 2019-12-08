@@ -9,12 +9,12 @@ using static StateStores.StateStoreResult;
 
 namespace StateStores.Test
 {
-    public static class StateStoreProxyTests
+    public static class StateChannelTests
     {
         static void AssertOk(StateStoreResult result) =>
             Assert.IsInstanceOf(typeof(Ok), result);
 
-        public static async Task TestBasicFunctionalityAsync(this IStateStoreProxy<string> proxy)
+        public static async Task TestBasicFunctionalityAsync(this IStateChannel<string> channel)
         {
             const string SAMPLE_STATE_1 = "state1";
             const string SAMPLE_STATE_2 = "state2";
@@ -31,29 +31,29 @@ namespace StateStores.Test
             int mut_ActualNextNotificationCount = 0;
             int mut_ActualPreviousNotificationCount = 0;
 
-            proxy.OnAdd
+            channel.OnAdd
                 .Subscribe(_ => mut_ActualAddNotificationCount += 1);
-            proxy.OnUpdate
+            channel.OnUpdate
                 .Subscribe(_ => mut_ActualUpdateNotificationCount += 1);
-            proxy.OnRemove
+            channel.OnRemove
                 .Subscribe(_ => mut_ActualRemoveNotificationCount += 1);
-            proxy.OnNext()
+            channel.OnNext()
                 .Subscribe(_ => mut_ActualNextNotificationCount += 1);
-            proxy.OnPrevious()
+            channel.OnPrevious()
                 .Subscribe(_ => mut_ActualPreviousNotificationCount += 1);
 
             const int OBSERVER_DELAY_MS = 200;
 
             // Can set 
-            AssertOk(await proxy.AddAsync(SAMPLE_STATE_1));
+            AssertOk(await channel.AddAsync(SAMPLE_STATE_1));
             await Task.Delay(OBSERVER_DELAY_MS);
 
             // Can update 
-            AssertOk(await proxy.UpdateAsync(SAMPLE_STATE_1, SAMPLE_STATE_2));
+            AssertOk(await channel.UpdateAsync(SAMPLE_STATE_1, SAMPLE_STATE_2));
             await Task.Delay(OBSERVER_DELAY_MS);
 
             // Can remove 
-            AssertOk(await proxy.RemoveAsync(SAMPLE_STATE_2));
+            AssertOk(await channel.RemoveAsync(SAMPLE_STATE_2));
             await Task.Delay(OBSERVER_DELAY_MS);
 
             Assert.AreEqual(
@@ -77,7 +77,7 @@ namespace StateStores.Test
                 mut_ActualPreviousNotificationCount);
         }
 
-        public static async Task TestReplayFunctionalityAsync(this IStateStoreProxy<string> proxy)
+        public static async Task TestReplayFunctionalityAsync(this IStateChannel<string> channel)
         {
             const string SAMPLE_STATE_1 = "state1";
 
@@ -87,13 +87,13 @@ namespace StateStores.Test
 
             int mut_ActualAddNotificationCount = 0;
 
-            proxy.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
+            channel.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
 
             // Can set 
-            AssertOk(await proxy.AddAsync(SAMPLE_STATE_1));
+            AssertOk(await channel.AddAsync(SAMPLE_STATE_1));
 
-            proxy.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
-            proxy.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
+            channel.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
+            channel.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
 
             await Task.Delay(OBSERVER_DELAY_MS);
 
@@ -104,7 +104,7 @@ namespace StateStores.Test
 
         // This is a state-transition-chain where observers invoke transitions.
         public static async Task TestReactiveFunctionalityAsync(
-            this IStateStoreProxy<int> proxy, int stateCount, int parallelHandlers = 1)
+            this IStateChannel<int> channel, int stateCount, int parallelHandlers = 1)
         {
 
             var mut_actualStateHistory = new List<int>();
@@ -121,24 +121,25 @@ namespace StateStores.Test
             Enumerable
                 .Range(0, parallelHandlers)
                 .Select(_ =>
-                    proxy
+                    channel
                         .OnNext(ShouldProceed)
-                        .Do(i => proxy.UpdateAsync(i, i + 1))
+                        .Do(i => channel.UpdateAsync(i, i + 1))
                         .Subscribe())
                 .ToList();
 
-            proxy
+            channel
                 .OnNext(ShouldProceed)
                 .Do(LogState)
                 .Subscribe();
 
-            proxy
-                .OnNext(ShouldStop)
-                .Do(i => proxy.RemoveAsync(i))
+            channel
+                .CreateHandle(ShouldStop)
+                .Do(h => h.RemoveAsync())
+                .Select(h => h.Value)
                 .Subscribe(tcsStop.SetResult);
 
             const int INITIAL_STATE = 0;
-            AssertOk(await proxy.AddAsync(INITIAL_STATE));
+            AssertOk(await channel.AddAsync(INITIAL_STATE));
 
             var finalState = await tcsStop.Task;
 

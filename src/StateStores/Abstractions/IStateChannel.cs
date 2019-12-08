@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace StateStores
 {
-    public interface IStateStoreProxy<TState>
+    public interface IStateChannel<TState>
     {        
 
         IObservable<TState> OnAdd { get; }
