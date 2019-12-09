@@ -31,9 +31,9 @@ namespace StateStores.App.Blazor.Services
                 .Delay(frequency)
                 .Update("was")
                 .Delay(frequency)
-                .Update("geht")
+                .Update("geht,")
                 .Delay(frequency)
-                .Update("mois?")
+                .Update("Bro?")
                 .Delay(frequency)
                 .Remove()
                 .Subscribe();
