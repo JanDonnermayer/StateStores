@@ -25,7 +25,7 @@ namespace StateStores.App.Blazor.Services
         private IDisposable RegisterChatBehaviour(string stateName, string trigger, TimeSpan frequency) =>
             stateStore
                 .CreateChannel<string>(stateName)
-                .CreateHandle(trigger)
+                .WithHandle(trigger)
                 .Delay(frequency)
                 .Update("Jo,")
                 .Delay(frequency)
@@ -41,7 +41,7 @@ namespace StateStores.App.Blazor.Services
         private IDisposable RegisterPulseBehaviour(string stateName, TimeSpan frequency) =>
             stateStore
                 .CreateChannel<string>(stateName)
-                .CreateHandle()
+                .WithHandle()
                 .Delay(frequency)
                 .Update(_ => Guid.NewGuid().ToString())
                 .Subscribe();
