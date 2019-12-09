@@ -29,10 +29,8 @@ namespace StateStores
 
 
         public static IObservable<TState> OnPrevious<TState>(this IStateChannel<TState> channel) =>
-            channel.OnRemove
-                .Merge(channel.OnUpdate
-                .Select(_ => _.previousState));
-                
+            channel.OnRemove.Merge(channel.OnUpdate.Select(_ => _.previousState));
+
         public static IObservable<TState> OnPrevious<TState>(this IStateChannel<TState> channel,
             Func<TState, bool> condition) =>
                 channel.OnPrevious().Where(condition);
