@@ -40,11 +40,11 @@ namespace StateStores
         }
 
         /// <summary>
-        /// If the specified result is of type <typeparam name="TError" />:
+        /// If the operation results in <typeparam name="TError" />:
         /// Retries the operation within specified intervals of
         /// exponentially increasing length of [currentTryCount] * 2 ^ [baseDelay]
         /// until the result is not of type <typeparam name="TError" />,
-        /// or the sequence is exhausted.
+        /// or the <paramref name="retryCount" /> is exhausted.
         /// </summary>
         public static Func<Task<StateStoreResult>> RetryIncrementallyOn<TError>(
             this Func<Task<StateStoreResult>> source,
