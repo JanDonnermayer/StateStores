@@ -9,7 +9,7 @@ namespace StateStores
 
     public static class ImmutableStateHandle
     {
-        private static IImmutableStateHandle<TState> CreateHandleInternal<TState>(               
+        private static IImmutableStateHandle<TState> WithHandleInternal<TState>(               
                this IStateChannel<TState> channel,
                TState currentState) =>
                    new Instance<TState>(
@@ -21,19 +21,19 @@ namespace StateStores
                        updateAsync: nextState => Observable
                               .FromAsync(() => channel.UpdateAsync(currentState, nextState))
                               .Where(r => r is Ok)
-                              .Select(_ => CreateHandleInternal(channel, nextState)));
+                              .Select(_ => WithHandleInternal(channel, nextState)));
 
 
-        public static IObservable<IImmutableStateHandle<TState>> CreateHandle<TState>(this IStateChannel<TState> channel) =>
-            channel.OnNext().Select(channel.CreateHandleInternal);
+        public static IObservable<IImmutableStateHandle<TState>> WithHandle<TState>(this IStateChannel<TState> channel) =>
+            channel.OnNext().Select(channel.WithHandleInternal);
 
-        public static IObservable<IImmutableStateHandle<TState>> CreateHandle<TState>(this IStateChannel<TState> channel,
+        public static IObservable<IImmutableStateHandle<TState>> WithHandle<TState>(this IStateChannel<TState> channel,
             Func<TState, bool> triggerCondition) =>
-                channel.OnNext(triggerCondition).Select(channel.CreateHandleInternal);
+                channel.OnNext(triggerCondition).Select(channel.WithHandleInternal);
 
-        public static IObservable<IImmutableStateHandle<TState>> CreateHandle<TState>(this IStateChannel<TState> channel,
+        public static IObservable<IImmutableStateHandle<TState>> WithHandle<TState>(this IStateChannel<TState> channel,
             TState triggerValue) =>
-                channel.OnNext(triggerValue).Select(channel.CreateHandleInternal);
+                channel.OnNext(triggerValue).Select(channel.WithHandleInternal);
 
 
         public static IObservable<IImmutableStateHandle<TState>> Update<TState>(

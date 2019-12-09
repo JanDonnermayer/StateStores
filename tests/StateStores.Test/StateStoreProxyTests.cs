@@ -133,7 +133,7 @@ namespace StateStores.Test
                 .Subscribe();
 
             channel
-                .CreateHandle(ShouldStop)
+                .WithHandle(ShouldStop)
                 .Do(h => h.RemoveAsync())
                 .Select(h => h.Value)
                 .Subscribe(tcsStop.SetResult);

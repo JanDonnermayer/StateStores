@@ -32,6 +32,7 @@ namespace StateStores
             channel.OnRemove
                 .Merge(channel.OnUpdate
                 .Select(_ => _.previousState));
+                
         public static IObservable<TState> OnPrevious<TState>(this IStateChannel<TState> channel,
             Func<TState, bool> condition) =>
                 channel.OnPrevious().Where(condition);
@@ -39,6 +40,7 @@ namespace StateStores
         public static IObservable<TState> OnPrevious<TState>(this IStateChannel<TState> channel,
             TState value) =>
                 channel.OnPrevious().Where(state => EqualityComparer<TState>.Default.Equals(state, value));
+
 
         #region  Private Types
 

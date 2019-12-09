@@ -23,13 +23,15 @@ var channel = new RedisStateStore(server: "localhost:8080")
 
 // Reactive-transit: S1 --> S2
 channel
-    .OnNext(States.S1.Equals)
-    .Subscribe(state => channel.UpdateAsync(state, States.S2));
+    .WithHandle(States.S1)
+    .Update(States.S2)
+    .Subscribe();
 
 // Reactive-transit: S2 --> {0}
 channel
-    .OnNext(States.S2.Equals)
-    .Subscribe(state => channel.RemoveAsync(state));
+    .WithHandle(States.S2)
+    .Remove()
+    .Subscribe();
 
 // Imperative-transit: {0} --> S1
 await channel.AddAsync(States.S1);
