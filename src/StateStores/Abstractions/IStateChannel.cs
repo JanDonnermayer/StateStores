@@ -6,7 +6,6 @@ namespace StateStores
 {
     public interface IStateChannel<TState>
     {        
-
         IObservable<TState> OnAdd { get; }
 
         IObservable<(TState previousState, TState currentState)> OnUpdate { get; }

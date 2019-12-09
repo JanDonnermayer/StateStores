@@ -5,7 +5,7 @@ namespace StateStores
 {
     public interface IImmutableStateHandle<TState>
     {
-        TState Value { get; }
+        TState State { get; }
 
         IObservable<Unit> RemoveAsync();
 

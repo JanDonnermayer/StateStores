@@ -5,7 +5,7 @@ using NUnit.Framework;
 using System.Reactive.Linq;
 using System.Collections.Generic;
 using static StateStores.StateStoreResult;
-
+using System.Reactive;
 
 namespace StateStores.Test
 {
@@ -104,7 +104,7 @@ namespace StateStores.Test
 
         // This is a state-transition-chain where observers invoke transitions.
         public static async Task TestReactiveFunctionalityAsync(
-            this IStateChannel<int> channel, int stateCount, int parallelHandlers = 1)
+            this IStateChannel<int> channel, int stateCount, int parallelHandlersCount = 1)
         {
 
             var mut_actualStateHistory = new List<int>();
@@ -116,32 +116,32 @@ namespace StateStores.Test
 
             void LogState(int i) => mut_actualStateHistory.Add(i);
 
-            var tcsStop = new TaskCompletionSource<int>();
+            var tcsStop = new TaskCompletionSource<Unit>();
 
-            Enumerable
-                .Range(0, parallelHandlers)
-                .Select(_ =>
-                    channel
-                        .OnNext(ShouldProceed)
-                        .Do(i => channel.UpdateAsync(i, i + 1))
-                        .Subscribe())
-                .ToList();
-
-            channel
+            channel // Logging
                 .OnNext(ShouldProceed)
                 .Do(LogState)
                 .Subscribe();
 
-            channel
-                .OnNextWithHandl(ShouldStop)
-                .Do(h => h.RemoveAsync())
-                .Select(h => h.Value)
-                .Subscribe(tcsStop.SetResult);
+            Enumerable // Procedure handlers
+                .Range(0, parallelHandlersCount)
+                .Select(_ =>
+                    channel
+                        .WithHandleOnNext(ShouldProceed)
+                        .ThenUpdate(i =>  i + 1)
+                        .Subscribe())
+                .ToList();
+
+            channel // Termination
+                .WithHandleOnNext(ShouldStop)
+                .ThenRemove()
+                .Do(tcsStop.SetResult)
+                .Subscribe();
 
             const int INITIAL_STATE = 0;
             AssertOk(await channel.AddAsync(INITIAL_STATE));
 
-            var finalState = await tcsStop.Task;
+            await tcsStop.Task;
 
             Assert.IsTrue(
                 condition: Enumerable.SequenceEqual(

@@ -22,9 +22,9 @@ namespace StateStores.App.Blazor.Services
             this.stateStore = stateStore ?? throw new System.ArgumentNullException(nameof(stateStore));
         }
 
-        private IDisposable RegisterChatBehaviour(string stateName, string trigger, TimeSpan frequency) =>
+        private IDisposable RegisterChatBehaviour(string channel, string trigger, TimeSpan frequency) =>
             stateStore
-                .CreateChannel<string>(stateName)
+                .CreateChannel<string>(channel)
                 .WithHandleOnNext(trigger)
                 .Delay(frequency)
                 .ThenUpdate("Jo,")
@@ -38,9 +38,9 @@ namespace StateStores.App.Blazor.Services
                 .ThenRemove()
                 .Subscribe();
 
-        private IDisposable RegisterPulseBehaviour(string stateName, TimeSpan frequency) =>
+        private IDisposable RegisterPulseBehaviour(string channel, TimeSpan frequency) =>
             stateStore
-                .CreateChannel<string>(stateName)
+                .CreateChannel<string>(channel)
                 .WithHandleOnNext()
                 .Delay(frequency)
                 .ThenUpdate(_ => Guid.NewGuid().ToString())
@@ -51,9 +51,17 @@ namespace StateStores.App.Blazor.Services
 
         Task IHostedService.StartAsync(CancellationToken cancellationToken)
         {
-            mut_disposable = RegisterChatBehaviour("Tobi", "Hey", TimeSpan.FromSeconds(1))
-                .Append(RegisterPulseBehaviour("Jan", TimeSpan.FromSeconds(1)))
-                .Append(RegisterPulseBehaviour("Elisa", TimeSpan.FromSeconds(1)));
+            mut_disposable = RegisterChatBehaviour(
+                    channel: "Tobi",
+                    trigger: "Hey",
+                    frequency: TimeSpan.FromSeconds(1))
+                .Append(RegisterPulseBehaviour(
+                    channel: "Jan",
+                    frequency: TimeSpan.FromSeconds(1)))
+                .Append(RegisterPulseBehaviour(
+                    channel: "Elisa",
+                    frequency: TimeSpan.FromSeconds(1)));
+
             return Task.CompletedTask;
         }
 

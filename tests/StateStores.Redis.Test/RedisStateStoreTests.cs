@@ -13,24 +13,39 @@ namespace StateStores.Redis.Test
     {
 
         [SetUp]
-        public void Setup() => RedisStateStoreFactory.FlushAllDatabases();
+        public void Setup() => 
+            RedisStateStoreFactory.FlushAllDatabases();
+
+        private IStateStore GetStateStore() => 
+            RedisStateStoreFactory.GetStateStore();
 
 
         [Test]
-        public async Task TestParallelFunctionalityAsync()
-        {
-            using var store = RedisStateStoreFactory.GetStateStore();
-            await store.TestParallelFunctionalityAsync(
-                parallelWorkersCount: 30,
-                transactionsBlockCount: 100
-            );
-        }
+        public Task TestBasicFunctionalityAsync() => 
+            GetStateStore()
+                .TestBasicFunctionalityAsync(key: Guid.NewGuid().ToString()); 
 
         [Test]
-        public async Task TestBasicFunctionalityAsync()
-        {
-            using var store = RedisStateStoreFactory.GetStateStore();
-            await store.TestBasicFunctionalityAsync(Guid.NewGuid().ToString());
-        }
+        public Task TestParallelFunctionalityAsync() => 
+            GetStateStore()
+                .TestParallelFunctionalityAsync(
+                    parallelHandlersCount: 5,
+                    stateBlockCount: 100); 
+
+        [Test]
+        public Task TestReactiveFunctionalityAsync() => 
+            GetStateStore()
+                .CreateChannel<int>("key1")
+                .TestReactiveFunctionalityAsync(
+                    stateCount: 10,
+                    parallelHandlersCount: 5); 
+
+        [Test]
+        public Task TestReplayFunctionalityAsync() => 
+            GetStateStore()
+                .CreateChannel<string>("key2")
+                .TestReplayFunctionalityAsync();
+
     }
+    
 }

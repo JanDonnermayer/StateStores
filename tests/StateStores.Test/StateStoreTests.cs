@@ -42,14 +42,14 @@ namespace StateStores.Test
         }
 
         public static async Task TestParallelFunctionalityAsync(
-            this IStateStore store, int parallelWorkersCount = 30, int transactionsBlockCount = 100)
+            this IStateStore store, int parallelHandlersCount = 30, int stateBlockCount = 100)
         {
 
             await Task.WhenAll(Enumerable
-                .Range(0, parallelWorkersCount)
+                .Range(0, parallelHandlersCount)
                 .Select(async i =>
                 {
-                    for (int j = 0; j < transactionsBlockCount; j++)
+                    for (int j = 0; j < stateBlockCount; j++)
                         await TestBasicFunctionalityAsync(store, i.ToString());
                 }));
         }
