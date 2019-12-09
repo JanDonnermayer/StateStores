@@ -8,6 +8,7 @@ namespace StateStores
         TState Value { get; }
 
         IObservable<Unit> RemoveAsync();
+
         IObservable<IImmutableStateHandle<TState>> UpdateAsync(TState nextState);
     }
 

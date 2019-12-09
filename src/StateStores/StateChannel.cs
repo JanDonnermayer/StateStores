@@ -87,7 +87,7 @@ namespace StateStores
                 GetObservable()
                     .Where(_ => _.current.ContainsKey(key) && _.previous.ContainsKey(key))
                     .Select(_ => (previousState: _.previous[key], currentState: _.current[key]))
-                    .Where(_ => !_.previousState.Equals(_.currentState));
+                    .Where(_ => !EqualityComparer<TState>.Default.Equals(_.previousState, _.currentState));
         }
 
         #endregion

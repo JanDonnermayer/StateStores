@@ -70,13 +70,6 @@ else
       }
    }
    
-   private void OnUpdateState(string state)
-   {
-      _currentState = state;
-      _nextState = Guid.NewGuid().ToString();
-      TryStateHasChanged();
-   }
-
    private async Task AddAsync() 
    {
       await channel.AddAsync(NextState);
@@ -104,7 +97,7 @@ else
          .Merge(channel.OnRemove.Select(_ => NO_STATE))
          .Merge(Observable.Return(NO_STATE))
          .ObserveOn(SynchronizationContext.Current)
-         .Subscribe(OnUpdateState);
+         .Subscribe(_ => CurrentState = _);
    }
 
    public void Dispose() => disposable?.Dispose();

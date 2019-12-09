@@ -9,9 +9,9 @@ namespace StateStores
 
     public static class ImmutableStateHandle
     {
-        private static IImmutableStateHandle<TState> WithHandleInternal<TState>(               
-               this IStateChannel<TState> channel,
-               TState currentState) =>
+        private static IImmutableStateHandle<TState> CreateHandle<TState>(
+               this TState currentState,
+               IStateChannel<TState> channel) =>
                    new Instance<TState>(
                        state: currentState,
                        removeAsync: () => Observable
@@ -21,36 +21,42 @@ namespace StateStores
                        updateAsync: nextState => Observable
                               .FromAsync(() => channel.UpdateAsync(currentState, nextState))
                               .Where(r => r is Ok)
-                              .Select(_ => WithHandleInternal(channel, nextState)));
+                              .Select(_ => nextState.CreateHandle(channel)));
 
 
-        public static IObservable<IImmutableStateHandle<TState>> WithHandle<TState>(this IStateChannel<TState> channel) =>
-            channel.OnNext().Select(channel.WithHandleInternal);
+        public static IObservable<IImmutableStateHandle<TState>> WithHandleOnNext<TState>(this IStateChannel<TState> channel) =>
+            channel
+                .OnNext()
+                .Select(s => s.CreateHandle(channel));
 
-        public static IObservable<IImmutableStateHandle<TState>> WithHandle<TState>(this IStateChannel<TState> channel,
+        public static IObservable<IImmutableStateHandle<TState>> WithHandleOnNext<TState>(this IStateChannel<TState> channel,
             Func<TState, bool> triggerCondition) =>
-                channel.OnNext(triggerCondition).Select(channel.WithHandleInternal);
+                channel
+                    .OnNext(triggerCondition)
+                    .Select(s => s.CreateHandle(channel));
 
-        public static IObservable<IImmutableStateHandle<TState>> WithHandle<TState>(this IStateChannel<TState> channel,
+        public static IObservable<IImmutableStateHandle<TState>> WithHandleOnNext<TState>(this IStateChannel<TState> channel,
             TState triggerValue) =>
-                channel.OnNext(triggerValue).Select(channel.WithHandleInternal);
+                channel
+                    .OnNext(triggerValue)
+                    .Select(s => s.CreateHandle(channel));
 
 
-        public static IObservable<IImmutableStateHandle<TState>> Update<TState>(
+        public static IObservable<IImmutableStateHandle<TState>> ThenUpdate<TState>(
             this IObservable<IImmutableStateHandle<TState>> observable,
             TState nextState) =>
                 observable
                     .Select(h => h.UpdateAsync(nextState))
                     .Concat();
 
-        public static IObservable<IImmutableStateHandle<TState>> Update<TState>(
+        public static IObservable<IImmutableStateHandle<TState>> ThenUpdate<TState>(
             this IObservable<IImmutableStateHandle<TState>> observable,
             Func<TState, TState> nextStateFactory) =>
                 observable
                     .Select(h => h.UpdateAsync(nextStateFactory(h.Value)))
                     .Concat();
 
-        public static IObservable<Unit> Remove<TState>(
+        public static IObservable<Unit> ThenRemove<TState>(
             this IObservable<IImmutableStateHandle<TState>> observable) =>
                 observable
                     .Select(h => h.RemoveAsync())
