@@ -25,19 +25,19 @@ namespace StateStores
 
 
         public static IObservable<IImmutableStateHandle<TState>> WithHandleOnNext<TState>(this IStateChannel<TState> channel) =>
-            channel
+            (channel ?? throw new ArgumentNullException(nameof(channel)))
                 .OnNext()
                 .Select(state => state.CreateHandle(channel));
 
         public static IObservable<IImmutableStateHandle<TState>> WithHandleOnNext<TState>(this IStateChannel<TState> channel,
             Func<TState, bool> triggerCondition) =>
-                channel
+                (channel ?? throw new ArgumentNullException(nameof(channel)))
                     .OnNext(triggerCondition)
                     .Select(state => state.CreateHandle(channel));
 
         public static IObservable<IImmutableStateHandle<TState>> WithHandleOnNext<TState>(this IStateChannel<TState> channel,
             TState triggerValue) =>
-                channel
+                (channel ?? throw new ArgumentNullException(nameof(channel)))
                     .OnNext(triggerValue)
                     .Select(state => state.CreateHandle(channel));
 
@@ -45,20 +45,20 @@ namespace StateStores
         public static IObservable<IImmutableStateHandle<TState>> ThenUpdate<TState>(
             this IObservable<IImmutableStateHandle<TState>> observable,
             TState nextState) =>
-                observable
+                (observable ?? throw new ArgumentNullException(nameof(observable)))
                     .Select(handle => handle.UpdateAsync(nextState))
                     .Concat();
 
         public static IObservable<IImmutableStateHandle<TState>> ThenUpdate<TState>(
             this IObservable<IImmutableStateHandle<TState>> observable,
             Func<TState, TState> nextStateFactory) =>
-                observable
+                (observable ?? throw new ArgumentNullException(nameof(observable)))
                     .Select(handle => handle.UpdateAsync(nextStateFactory(handle.State)))
                     .Concat();
 
         public static IObservable<Unit> ThenRemove<TState>(
             this IObservable<IImmutableStateHandle<TState>> observable) =>
-                observable
+                (observable ?? throw new ArgumentNullException(nameof(observable)))
                     .Select(handle => handle.RemoveAsync())
                     .Concat();
 

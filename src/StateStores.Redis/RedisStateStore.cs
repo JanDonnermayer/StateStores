@@ -120,7 +120,7 @@ namespace StateStores.Redis
 
             if (!await transaction.ExecuteAsync()) return new StateError();
 
-            return new Ok();
+            return new Ok(); 
         }
 
         static async Task<StateStoreResult> RemoveInternalAsync<T>(IDatabase database, string key, T current)
@@ -143,6 +143,8 @@ namespace StateStores.Redis
 
         public async Task<StateStoreResult> AddAsync<T>(string key, T next)
         {
+            if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+
             var method = new Func<Task<StateStoreResult>>(() =>
                 AddInternalAsync(GetDatabase(), key, next));
             var res = await method
@@ -159,6 +161,8 @@ namespace StateStores.Redis
 
         public async Task<StateStoreResult> UpdateAsync<T>(string key, T current, T next)
         {
+            if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+
             var method = new Func<Task<StateStoreResult>>(() =>
                 UpdateInternalAsync(GetDatabase(), key, current, next));
             var res = await method
@@ -175,6 +179,8 @@ namespace StateStores.Redis
 
         public async Task<StateStoreResult> RemoveAsync<T>(string key, T current)
         {
+            if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+
             var method = new Func<Task<StateStoreResult>>(() =>
                 RemoveInternalAsync(GetDatabase(), key, current));
             var res = await method

@@ -17,10 +17,8 @@ namespace StateStores.App.Blazor.Services
 
         private IDisposable? mut_disposable;
 
-        public StateReactor(IStateStore stateStore)
-        {
+        public StateReactor(IStateStore stateStore) => 
             this.stateStore = stateStore ?? throw new System.ArgumentNullException(nameof(stateStore));
-        }
 
         private IDisposable RegisterChatBehaviour(string channel, string trigger, TimeSpan frequency) =>
             stateStore
@@ -68,6 +66,7 @@ namespace StateStores.App.Blazor.Services
         Task IHostedService.StopAsync(CancellationToken cancellationToken)
         {
             mut_disposable?.Dispose();
+
             return Task.CompletedTask;
         }
 

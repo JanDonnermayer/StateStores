@@ -13,31 +13,39 @@ namespace StateStores
     public static class StateChannel
     {
         public static IStateChannel<TState> CreateChannel<TState>(this IStateStore store, string key) =>
-            new Instance<TState>(store, key);
+            new Instance<TState>(
+                store ?? throw new ArgumentNullException(nameof(store)), 
+                key ?? throw new ArgumentNullException(nameof(key)));
 
 
         public static IObservable<TState> OnNext<TState>(this IStateChannel<TState> channel) =>
-            channel.OnAdd.Merge(channel.OnUpdate.Select(_ => _.currentState));
+            (channel ?? throw new ArgumentNullException(nameof(channel)))
+                .OnAdd.Merge(channel.OnUpdate.Select(_ => _.currentState));
 
         public static IObservable<TState> OnNext<TState>(this IStateChannel<TState> channel,
             Func<TState, bool> condition) =>
-                channel.OnNext().Where(condition);
+                (channel ?? throw new ArgumentNullException(nameof(channel)))
+                    .OnNext().Where(condition);
 
         public static IObservable<TState> OnNext<TState>(this IStateChannel<TState> channel,
             TState value) =>
-                channel.OnNext().Where(state => EqualityComparer<TState>.Default.Equals(state, value));
+                (channel ?? throw new ArgumentNullException(nameof(channel)))
+                    .OnNext().Where(state => EqualityComparer<TState>.Default.Equals(state, value));
 
 
         public static IObservable<TState> OnPrevious<TState>(this IStateChannel<TState> channel) =>
-            channel.OnRemove.Merge(channel.OnUpdate.Select(_ => _.previousState));
+            (channel ?? throw new ArgumentNullException(nameof(channel)))
+                .OnRemove.Merge(channel.OnUpdate.Select(_ => _.previousState));
 
         public static IObservable<TState> OnPrevious<TState>(this IStateChannel<TState> channel,
             Func<TState, bool> condition) =>
-                channel.OnPrevious().Where(condition);
+                (channel ?? throw new ArgumentNullException(nameof(channel)))
+                    .OnPrevious().Where(condition);
 
         public static IObservable<TState> OnPrevious<TState>(this IStateChannel<TState> channel,
             TState value) =>
-                channel.OnPrevious().Where(state => EqualityComparer<TState>.Default.Equals(state, value));
+                (channel ?? throw new ArgumentNullException(nameof(channel)))
+                    .OnPrevious().Where(state => EqualityComparer<TState>.Default.Equals(state, value));
 
 
         #region  Private Types
