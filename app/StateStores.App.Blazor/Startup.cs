@@ -33,11 +33,12 @@ namespace StateStores.App.Blazor
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
 
-            services.AddSingleton<IStateStore>(Configuration["Redis"] switch
-            {
-                string server => new RedisStateStore(server),
-                _ => new InMemoryStateStore()
-            });
+            services.AddSingleton<IStateStore>(_ =>
+                Configuration["Redis"] switch
+                {
+                    string server => new RedisStateStore(server),
+                    _ => new InMemoryStateStore()
+                });
 
             services.AddHostedService<StateReactor>();
         }
