@@ -24,18 +24,21 @@ namespace StateStores
                               .Select(_ => nextState.CreateHandle(channel)));
 
 
-        public static IObservable<IImmutableStateHandle<TState>> WithHandleOnNext<TState>(this IStateChannel<TState> channel) =>
+        public static IObservable<IImmutableStateHandle<TState>> WithHandleOnNext<TState>(
+            this IStateChannel<TState> channel) =>
             (channel ?? throw new ArgumentNullException(nameof(channel)))
                 .OnNext()
                 .Select(state => state.CreateHandle(channel));
 
-        public static IObservable<IImmutableStateHandle<TState>> WithHandleOnNext<TState>(this IStateChannel<TState> channel,
+        public static IObservable<IImmutableStateHandle<TState>> WithHandleOnNext<TState>(
+            this IStateChannel<TState> channel,
             Func<TState, bool> triggerCondition) =>
                 (channel ?? throw new ArgumentNullException(nameof(channel)))
                     .OnNext(triggerCondition)
                     .Select(state => state.CreateHandle(channel));
 
-        public static IObservable<IImmutableStateHandle<TState>> WithHandleOnNext<TState>(this IStateChannel<TState> channel,
+        public static IObservable<IImmutableStateHandle<TState>> WithHandleOnNext<TState>(
+            this IStateChannel<TState> channel,
             TState triggerValue) =>
                 (channel ?? throw new ArgumentNullException(nameof(channel)))
                     .OnNext(triggerValue)
