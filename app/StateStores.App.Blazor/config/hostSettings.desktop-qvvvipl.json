@@ -1,4 +1,4 @@
 {
-    "URLS" : "http://desktop-qvvvipl:5005",
-    "Redis" : "desktop-qvvvipl:6379" 
+    "URLS" : "http://localhost:5005",
+    "REDIS_URL" : "desktop-qvvvipl:6379" 
 }

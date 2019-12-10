@@ -14,7 +14,7 @@ namespace StateStores.Redis.Test
             Environment.UserDomainName.ToLower() switch
             {
                 PZS => @"linux-genet01:7001",
-                HOME_LOCAL => @"localhost:32769",
+                HOME_LOCAL => @"localhost:6379",
                 _ => throw new InconclusiveException("Unknown environment!")
             };
 

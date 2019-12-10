@@ -144,7 +144,7 @@
                 "build"
             ],
             "dockerBuild": {
-                "tag": "statestores:dev",
+                "tag": "statestores/app:dev",
                 "target": "base",
                 "dockerfile": "${workspaceFolder}/Dockerfile",
                 "context": "${workspaceFolder}"
@@ -160,7 +160,8 @@
                 "build"
             ],
             "dockerBuild": {
-                "tag": "statestores:latest",
+                "tag": "statestores/app:latest",
+
                 "dockerfile": "${workspaceFolder}/Dockerfile",
                 "context": "${workspaceFolder}"
             },

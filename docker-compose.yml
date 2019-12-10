@@ -11,8 +11,8 @@ services:
     container_name: statestores-app-blazor
     build: "."
     environment:
-      "Redis" : "172.26.0.3:6379"
+      "REDIS_URL" : "redis:6379"
       "URLS"  : "http://+:6005"
     ports:
       - "6005:6005"
-
+    restart: always 
