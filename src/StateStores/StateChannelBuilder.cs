@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 
 namespace StateStores
 {
-    public static class StateChannel
+    public static class StateChannelBuilder
     {
         public static IStateChannel<TState> CreateChannel<TState>(this IStateStore store, string key) =>
-            new Instance<TState>(
+            new StateChannel<TState>(
                 store ?? throw new ArgumentNullException(nameof(store)),
                 key ?? throw new ArgumentNullException(nameof(key)));
 
@@ -46,7 +46,7 @@ namespace StateStores
 
         #region  Private Types
 
-        private class Instance<TState> : IStateChannel<TState>
+        private class StateChannel<TState> : IStateChannel<TState>
         {
             private readonly IStateStore store;
             private readonly string key;
@@ -57,7 +57,7 @@ namespace StateStores
                     .Select(_ => _.Reverse())
                     .Select(_ => (_.Skip(1).First(), _.First()));
 
-            public Instance(IStateStore store, string key)
+            public StateChannel(IStateStore store, string key)
             {
                 this.store = store ?? throw new ArgumentNullException(nameof(store));
                 this.key = key ?? throw new ArgumentNullException(nameof(key));
