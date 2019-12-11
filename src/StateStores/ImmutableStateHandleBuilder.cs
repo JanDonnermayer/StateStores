@@ -8,9 +8,11 @@ namespace StateStores
 
     public static class ImmutableStateHandleBuilder
     {
-        public static IObservable<IImmutableStateHandle<TState>> WithHandle<TState>(
-            this IObservable<TState> stateObservable, IStateChannel<TState> channel) =>
-                stateObservable
+        public static IObservable<IImmutableStateHandle<TState>> CreateHandle<TState>(
+            this IStateChannel<TState> channel, 
+            Func<IStateChannel<TState>, IObservable<TState>> filter) =>
+                (filter ?? throw new ArgumentNullException(nameof(filter)))
+                    .Invoke(channel ?? throw new ArgumentNullException(nameof(channel)))
                     .Select(state => ImmutableStateHandle<TState>.Create(channel, state));
 
         public static IObservable<IImmutableStateHandle<TState>> AddWithHandle<TState>(
@@ -49,20 +51,17 @@ namespace StateStores
         public static IObservable<IImmutableStateHandle<TState>> OnNextWithHandle<TState>(
             this IStateChannel<TState> channel) =>
                 (channel ?? throw new ArgumentNullException(nameof(channel)))
-                    .OnNext()
-                    .WithHandle(channel);
+                    .CreateHandle(cnl => cnl.OnNext());
 
         public static IObservable<IImmutableStateHandle<TState>> OnNextWithHandle<TState>(
-            this IStateChannel<TState> channel, Func<TState, bool> triggerCondition) =>
+            this IStateChannel<TState> channel, Func<TState, bool> filter) =>
                 (channel ?? throw new ArgumentNullException(nameof(channel)))
-                    .OnNext(triggerCondition)
-                    .WithHandle(channel);
+                    .CreateHandle(cnl => cnl.OnNext(filter));
 
         public static IObservable<IImmutableStateHandle<TState>> OnNextWithHandle<TState>(
-            this IStateChannel<TState> channel, TState triggerValue) =>
+            this IStateChannel<TState> channel, TState filter) =>
                 (channel ?? throw new ArgumentNullException(nameof(channel)))
-                    .OnNext(triggerValue)
-                    .WithHandle(channel);
+                    .CreateHandle(cnl => cnl.OnNext(filter));
 
 
         #region  Private Types
