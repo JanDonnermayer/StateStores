@@ -104,13 +104,13 @@ namespace StateStores.Test
 
         // This is a state-transition-chain where observers invoke transitions.
         public static async Task TestReactiveFunctionalityAsync(
-            this IStateChannel<int> channel, int stateCount, int parallelHandlersCount = 1)
+            this IStateChannel<int> channel, int stepCount, int activeChannelCount = 1)
         {
 
             var mut_actualStateHistory = new List<int>();
-            var exptectedStateHistory = Enumerable.Range(0, stateCount);
+            var exptectedStateHistory = Enumerable.Range(0, stepCount);
 
-            bool ShouldProceed(int i) => (i < stateCount);
+            bool ShouldProceed(int i) => (i < stepCount);
 
             bool ShouldStop(int i) => !ShouldProceed(i);
 
@@ -124,7 +124,7 @@ namespace StateStores.Test
                 .Subscribe();
 
             Enumerable // Procedure handlers
-                .Range(0, parallelHandlersCount)
+                .Range(0, activeChannelCount)
                 .Select(_ =>
                     channel
                         .WithHandleOnNext(ShouldProceed)

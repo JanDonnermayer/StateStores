@@ -30,7 +30,7 @@ namespace StateStores.Redis.Test
             using var store = RedisStateStoreFactory.GetStateStore();
             await store
                 .CreateChannel<int>(key: Guid.NewGuid().ToString())
-                .TestReactiveFunctionalityAsync(stateCount: 1000);
+                .TestReactiveFunctionalityAsync(stepCount: 1000);
         }
 
         [Test]

@@ -23,16 +23,16 @@ namespace StateStores.InMemory.Test
         public Task TestParallelFunctionalityAsync() => 
             GetStateStore()
                 .TestParallelFunctionalityAsync(
-                    parallelHandlersCount: 5,
-                    stateBlockCount: 100); 
+                    activeChannelCount: 5,
+                    stepBlockcount: 100); 
 
         [Test]
         public Task TestReactiveFunctionalityAsync() => 
             GetStateStore()
                 .CreateChannel<int>("key1")
                 .TestReactiveFunctionalityAsync(
-                    stateCount: 10,
-                    parallelHandlersCount: 5); 
+                    stepCount: 10,
+                    activeChannelCount: 5); 
 
         [Test]
         public Task TestReplayFunctionalityAsync() => 

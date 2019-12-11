@@ -42,16 +42,25 @@ namespace StateStores.Test
         }
 
         public static async Task TestParallelFunctionalityAsync(
-            this IStateStore store, int parallelHandlersCount = 30, int stateBlockCount = 100)
+            this IStateStore store, int activeChannelCount = 10, 
+            int stepBlockcount = 100, int passiveChannelCount = 1000)
         {
+            await Task.WhenAll(Enumerable
+                .Range(0, passiveChannelCount)
+                .Select(i => store.AddAsync($"passive_{i}", "state0")));
 
             await Task.WhenAll(Enumerable
-                .Range(0, parallelHandlersCount)
+                .Range(0, activeChannelCount)
                 .Select(async i =>
                 {
-                    for (int j = 0; j < stateBlockCount; j++)
+                    for (int j = 0; j < stepBlockcount; j++)
                         await TestBasicFunctionalityAsync(store, i.ToString());
                 }));
+
+            await Task.WhenAll(Enumerable
+                .Range(0, passiveChannelCount)
+                .Select(i =>store.RemoveAsync($"passive_{i}", "state0")));
         }
+        
     }
 }
