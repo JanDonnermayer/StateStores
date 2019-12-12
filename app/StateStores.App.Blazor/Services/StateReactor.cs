@@ -17,7 +17,7 @@ namespace StateStores.App.Blazor.Services
 
         private IDisposable? mut_disposable;
 
-        public StateReactor(IStateStore stateStore) => 
+        public StateReactor(IStateStore stateStore) =>
             this.stateStore = stateStore ?? throw new System.ArgumentNullException(nameof(stateStore));
 
         private IDisposable RegisterChatBehaviour(string channel, string trigger, TimeSpan frequency) =>
@@ -45,6 +45,16 @@ namespace StateStores.App.Blazor.Services
                 .Subscribe();
 
 
+        private IDisposable RegisterQuackBehaviour(string channel, string trigger, TimeSpan frequency) =>
+            stateStore
+                .CreateChannel<string>(channel)
+                .OnNextWithHandle(trigger)
+                .Delay(frequency)
+                .Update("quack!")
+                .Remove()
+                .Subscribe();
+
+
         #region  Implementation of IHostedService
 
         Task IHostedService.StartAsync(CancellationToken cancellationToken)
@@ -58,6 +68,10 @@ namespace StateStores.App.Blazor.Services
                     frequency: TimeSpan.FromSeconds(1)))
                 .Append(RegisterPulseBehaviour(
                     channel: "Elisa",
+                    frequency: TimeSpan.FromSeconds(1)))
+                .Append(RegisterQuackBehaviour(
+                    channel: "Duck",
+                    trigger: "say",
                     frequency: TimeSpan.FromSeconds(1)));
 
             return Task.CompletedTask;
