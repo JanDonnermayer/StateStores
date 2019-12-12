@@ -49,8 +49,10 @@ namespace StateStores.App.Blazor.Services
             stateStore
                 .CreateChannel<string>(channel)
                 .OnNextWithHandle(trigger)
-                .Delay(frequency)
                 .Update("quack!")
+                .Delay(frequency)
+                .Update("bye...")
+                .Delay(frequency)
                 .Remove()
                 .Subscribe();
 

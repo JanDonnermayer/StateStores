@@ -78,6 +78,7 @@ else
    private async Task UpdateAsync()
    {
       await channel.UpdateAsync(CurrentState, NextState);
+      NextState = String.Empty;
    }
 
    private async Task RemoveAsync()
