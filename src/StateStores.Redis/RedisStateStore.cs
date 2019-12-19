@@ -201,7 +201,7 @@ namespace StateStores.Redis
                     DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>()))
                 ))
                 .Concat()
-                .Merge(Observable.Return( // Start with empty set (states appear added for new subscribers)
+                .Merge(Observable.Return( // Start with empty set so states appear added for new subscribers
                     ImmutableDictionary<string, T>.Empty)
                 )
                 .Merge(Observable.FromAsync(async () => // Pass initial set
