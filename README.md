@@ -3,8 +3,8 @@
 [![](https://github.com/JanDonnermayer/StateStores/workflows/UnitTests/badge.svg)](
 https://github.com/JanDonnermayer/StateStores/actions)
 
-[![](https://img.shields.io/badge/nuget-v0.0.3-blue.svg)](
-https://www.nuget.org/packages/StateStores.Redis/)
+[![](https://img.shields.io/badge/nuget-v0.0.4-blue.svg)](
+https://www.nuget.org/packages/StateStores.InMemory/)
 
 Provides a simple interface for observing and modifying state atomically.
 
@@ -12,13 +12,13 @@ Provides a simple interface for observing and modifying state atomically.
 
 ```csharp
 using System.Reactive.Linq;
-using StateStores.Redis;
+using StateStores.InMemory;
 
 enum States { S1, S2 };
 
 // ...
 
-var channel = new RedisStateStore(server: "localhost:8080")
+var channel = new InMemoryStateStore()
     .CreateChannel<States>("state1");
 
 // Reactive-transit: S1 --> S2
@@ -40,5 +40,5 @@ await channel.AddAsync(States.S1);
 ## Dotnet CLI
 
 ```powershell
-dotnet add package StateStores.Redis
+dotnet add package StateStores.InMemory
 ```

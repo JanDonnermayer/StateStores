@@ -82,24 +82,36 @@ namespace StateStores.Test
             const string SAMPLE_STATE_1 = "state1";
 
             const int EXPECTED_ADD_NOTIFICATION_COUNT = 3;
+            const int EXPECTED_NEXT_NOTIFICATION_COUNT = 3;
 
             const int OBSERVER_DELAY_MS = 200;
 
             int mut_ActualAddNotificationCount = 0;
+            int mut_ActualNextNotificationCount = 0;
 
-            channel.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
+            void SubscribeNextAndAdd()
+            {
+                channel.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
+                channel.OnNext().Subscribe(_ => mut_ActualNextNotificationCount += 1);
+            }
+
+            SubscribeNextAndAdd();
 
             // Can set 
             AssertOk(await channel.AddAsync(SAMPLE_STATE_1));
 
-            channel.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
-            channel.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
+            SubscribeNextAndAdd();
+            SubscribeNextAndAdd();
 
             await Task.Delay(OBSERVER_DELAY_MS);
 
             Assert.AreEqual(
                 EXPECTED_ADD_NOTIFICATION_COUNT,
                 mut_ActualAddNotificationCount);
+
+            Assert.AreEqual(
+                EXPECTED_NEXT_NOTIFICATION_COUNT,
+                mut_ActualNextNotificationCount);
         }
 
         // This is a state-transition-chain where observers invoke transitions.
