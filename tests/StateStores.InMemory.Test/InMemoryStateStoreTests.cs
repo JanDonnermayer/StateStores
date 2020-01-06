@@ -23,8 +23,9 @@ namespace StateStores.InMemory.Test
         public Task TestParallelFunctionalityAsync() => 
             GetStateStore()
                 .TestParallelFunctionalityAsync(
-                    activeChannelCount: 5,
-                    stepBlockcount: 100); 
+                    activeChannelCount: 10,
+                    stepBlockcount: 100,
+                    passiveChannelCount: 1000); 
 
         [Test]
         public Task TestReactiveFunctionalityAsync() => 
