@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
@@ -16,72 +17,72 @@ namespace StateStores.App.Blazor.Services
 
         private IDisposable? mut_disposable;
 
-        public StateReactor(IStateStore stateStore)
-        {
+        public StateReactor(IStateStore stateStore) =>
             this.stateStore = stateStore ?? throw new System.ArgumentNullException(nameof(stateStore));
-        }
 
-        private IDisposable RegisterWoehrmann()
-        {
-            var proxy = stateStore
-                .CreateProxy<string>("Woehrmann");
-
-            Action<string> Respond(string response) =>
-                message => _ = proxy.UpdateAsync(message, response);
-
-            IEnumerable<IDisposable> _Register()
-            {
-                yield return proxy
-                    .OnNext("geht".Equals)
-                    .Delay(TimeSpan.FromSeconds(1))
-                    .Do(Respond("mois?"))
-                    .Subscribe();
-
-                yield return proxy
-                    .OnNext("was".Equals)
-                    .Delay(TimeSpan.FromSeconds(1))
-                    .Do(Respond("geht"))
-                    .Subscribe();
-
-                yield return proxy
-                    .OnNext("Hey".Equals)
-                    .Delay(TimeSpan.FromSeconds(1))
-                    .Do(Respond("was"))
-                    .Subscribe();
-            }
-
-            return new CompositeDisposable(_Register());
-        }
-
-        private IDisposable RegisterPulse(string stateName)
-        {
-            var proxy = stateStore
-                .CreateProxy<string>(stateName);
-
-            Action<string> Respond() =>
-                message => _ = proxy.UpdateAsync(message, Guid.NewGuid().ToString());
-
-            return proxy
-                .OnNext()
-                .Delay(TimeSpan.FromSeconds(1))
-                .Do(Respond())
+        private IDisposable RegisterChatBehaviour(string channel, string trigger, TimeSpan frequency) =>
+            stateStore
+                .CreateChannel<string>(channel)
+                .OnNextWithHandle(trigger)
+                .Delay(frequency)
+                .Update("Jo,")
+                .Delay(frequency)
+                .Update("was")
+                .Delay(frequency)
+                .Update("geht,")
+                .Delay(frequency)
+                .Update("Bro?")
+                .Delay(frequency)
+                .Remove()
                 .Subscribe();
-        }
+
+        private IDisposable RegisterPulseBehaviour(string channel, TimeSpan frequency) =>
+            stateStore
+                .CreateChannel<string>(channel)
+                .OnNextWithHandle()
+                .Delay(frequency)
+                .Update(_ => Guid.NewGuid().ToString())
+                .Subscribe();
+
+
+        private IDisposable RegisterQuackBehaviour(string channel, string trigger, TimeSpan frequency) =>
+            stateStore
+                .CreateChannel<string>(channel)
+                .OnNextWithHandle(trigger)
+                .Update("quack!")
+                .Delay(frequency)
+                .Update("bye...")
+                .Delay(frequency)
+                .Remove()
+                .Subscribe();
 
 
         #region  Implementation of IHostedService
 
         Task IHostedService.StartAsync(CancellationToken cancellationToken)
         {
-            mut_disposable = RegisterWoehrmann()
-                .Append(RegisterPulse("Jan"))
-                .Append(RegisterPulse("Elisa"));
+            mut_disposable = RegisterChatBehaviour(
+                    channel: "Tobi",
+                    trigger: "Hey",
+                    frequency: TimeSpan.FromSeconds(1))
+                .Append(RegisterPulseBehaviour(
+                    channel: "Jan",
+                    frequency: TimeSpan.FromSeconds(1)))
+                .Append(RegisterPulseBehaviour(
+                    channel: "Elisa",
+                    frequency: TimeSpan.FromSeconds(1)))
+                .Append(RegisterQuackBehaviour(
+                    channel: "Duck",
+                    trigger: "say",
+                    frequency: TimeSpan.FromSeconds(1)));
+
             return Task.CompletedTask;
         }
 
         Task IHostedService.StopAsync(CancellationToken cancellationToken)
         {
             mut_disposable?.Dispose();
+
             return Task.CompletedTask;
         }
 

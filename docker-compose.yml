@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  redis:
+    container_name: statestores-redis
+    image: redis
+    ports:
+        - "6379:6379"
+    restart: always 
+  app:
+    container_name: statestores-app-blazor
+    build: "."
+    environment:
+      "REDIS_URL" : "redis:6379"
+      "URLS"  : "http://+:6005"
+    ports:
+      - "6005:6005"
+    restart: always 

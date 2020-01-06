@@ -17,8 +17,5 @@ namespace StateStores
         /// Returns an Observable on the latest states.
         /// </summary>
         IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>();
-
     }
-
-
 }

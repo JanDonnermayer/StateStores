@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using StateStores.InMemory;
 using StateStores.Test;
-using static StateStores.Test.StateStoreProxyTests;
+using static StateStores.Test.StateChannelTests;
 
 namespace StateStores.InMemory.Test
 {
@@ -22,18 +22,22 @@ namespace StateStores.InMemory.Test
         [Test]
         public Task TestParallelFunctionalityAsync() => 
             GetStateStore()
-                .TestParallelFunctionalityAsync(3, 100); 
+                .TestParallelFunctionalityAsync(
+                    activeChannelCount: 5,
+                    stepBlockcount: 100); 
 
         [Test]
         public Task TestReactiveFunctionalityAsync() => 
             GetStateStore()
-                .CreateProxy<int>("key1")
-                .TestReactiveFunctionalityAsync(10, 5); 
+                .CreateChannel<int>("key1")
+                .TestReactiveFunctionalityAsync(
+                    stepCount: 10,
+                    activeChannelCount: 5); 
 
         [Test]
         public Task TestReplayFunctionalityAsync() => 
             GetStateStore()
-                .CreateProxy<string>("key2")
+                .CreateChannel<string>("key2")
                 .TestReplayFunctionalityAsync();
 
     }

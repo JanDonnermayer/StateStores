@@ -354,3 +354,6 @@ MigrationBackup/
 
 # Output
 out/
+
+# IDEA
+.idea/

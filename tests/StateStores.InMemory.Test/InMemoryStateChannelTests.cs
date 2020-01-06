@@ -1,24 +1,22 @@
 using System;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using StackExchange.Redis;
-using StateStores.Redis;
 using StateStores.Test;
 using static StateStores.Test.StateChannelTests;
 
-namespace StateStores.Redis.Test
+namespace StateStores.InMemory.Test
 {
     [TestFixture]
-    public class RedisStateChannelTests
+    public class InMemoryStateChannelTests
     {
-        [SetUp]
-        public void Setup() => RedisStateStoreFactory.FlushAllDatabases();
+        private static InMemoryStateStore GetStateStore() =>
+            new InMemoryStateStore();
 
 
         [Test]
         public async Task TestBasicFunctionalityAsync()
         {
-            using var store = RedisStateStoreFactory.GetStateStore();
+            var store = GetStateStore();
             await store
                 .CreateChannel<string>(key: Guid.NewGuid().ToString())
                 .TestBasicFunctionalityAsync();
@@ -27,7 +25,7 @@ namespace StateStores.Redis.Test
         [Test]
         public async Task TestReactiveFunctionalityAsync()
         {
-            using var store = RedisStateStoreFactory.GetStateStore();
+            var store = GetStateStore();
             await store
                 .CreateChannel<int>(key: Guid.NewGuid().ToString())
                 .TestReactiveFunctionalityAsync(stepCount: 1000);
@@ -36,7 +34,7 @@ namespace StateStores.Redis.Test
         [Test]
         public async Task TestReplayFunctionalityAsync()
         {
-            using var store = RedisStateStoreFactory.GetStateStore();
+            var store = GetStateStore();
             await store
                 .CreateChannel<string>(key: Guid.NewGuid().ToString())
                 .TestReplayFunctionalityAsync();

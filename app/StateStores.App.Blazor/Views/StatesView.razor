@@ -23,7 +23,7 @@ else
             {
                 <tr>
                     <td><ColoredLabel Text="@state.Key.ToString()"/></td>
-                    <td><ColoredLabel Text="@state.Value.ToString()"/></td>
+                    <td><ColoredLabel Text="@state.Value?.ToString()"/></td>
                 </tr>
             }
         </tbody>

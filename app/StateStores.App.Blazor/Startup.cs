@@ -5,11 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using StateStores.App.Blazor.Data;
 using StateStores.App.Blazor.Services;
 using StateStores.InMemory;
 using StateStores.Redis;
@@ -31,13 +29,13 @@ namespace StateStores.App.Blazor
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
 
-            services.AddSingleton<IStateStore>(Configuration["Redis"] switch
-            {
-                string server => new RedisStateStore(server),
-                _ => new InMemoryStateStore()
-            });
+            services.AddSingleton<IStateStore>(_ =>
+                Configuration["REDIS_URL"] switch
+                {
+                    string server => new RedisStateStore(server),
+                    _ => new InMemoryStateStore()
+                });
 
             services.AddHostedService<StateReactor>();
         }

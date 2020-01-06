@@ -2,7 +2,7 @@
 @implements IDisposable
 
 <h1 style="float: left; margin-right: 15px">State of</h1>
-<h1 style="@GenerateFromText(Name)">@Name</h1>
+<h1 style="@GetStyle(Name)">@Name</h1>
 
 @if(String.Equals(CurrentState, NO_STATE))
 {
@@ -12,13 +12,13 @@ else
 {
    <div class="form-group">
       <label for="inputCurrentState">Current:</label>
-      <input style="@GenerateFromText(CurrentState)" 
+      <input style="@GetStyle(CurrentState)" 
             type="text" class="form-control" 
             id="inputCurrentState" @bind="@CurrentState" 
             readonly />
       <br />
       <label for="inputNextState">Next:</label>
-      <input style="@GenerateFromText(NextState)" 
+      <input style="@GetStyle(NextState)" 
             type="text" class="form-control" 
             id="inputNextState" @bind="@NextState" />
       <br />
@@ -33,7 +33,7 @@ else
    [Parameter]
    public string Name { get; set; }
 
-   private IStateStoreProxy<string> proxy;
+   private IStateChannel<string> channel;
 
    private IDisposable disposable;
 
@@ -70,26 +70,20 @@ else
       }
    }
    
-   private void OnUpdateState(string state)
-   {
-      _currentState = state;
-      _nextState = Guid.NewGuid().ToString();
-      TryStateHasChanged();
-   }
-
    private async Task AddAsync() 
    {
-      await proxy.AddAsync(NextState);
+      await channel.AddAsync(NextState);
    }
 
    private async Task UpdateAsync()
    {
-      await proxy.UpdateAsync(CurrentState, NextState);
+      await channel.UpdateAsync(CurrentState, NextState);
+      NextState = String.Empty;
    }
 
    private async Task RemoveAsync()
    {
-      await proxy.RemoveAsync(CurrentState);
+      await channel.RemoveAsync(CurrentState);
    }
 
 
@@ -97,14 +91,14 @@ else
    {
       await base.OnParametersSetAsync();
 
-      proxy = stateStore.CreateProxy<string>(Name);
+      channel = stateStore.CreateChannel<string>(Name);
 
-      disposable = proxy
-         .OnNext()           
-         .Merge(proxy.OnRemove.Select(_ => NO_STATE))
+      disposable = channel
+         .OnNext()     
+         .Merge(channel.OnRemove.Select(_ => NO_STATE))
          .Merge(Observable.Return(NO_STATE))
          .ObserveOn(SynchronizationContext.Current)
-         .Subscribe(OnUpdateState);
+         .Subscribe(_ => CurrentState = _);
    }
 
    public void Dispose() => disposable?.Dispose();
