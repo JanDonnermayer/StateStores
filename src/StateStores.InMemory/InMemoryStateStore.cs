@@ -9,12 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using static StateStores.StateStoreResult;
 
-
 namespace StateStores.InMemory
 {
     public sealed class InMemoryStateStore : IStateStore
     {
-
         #region Private Members
 
         private ImmutableDictionary<Type, SemaphoreSlim> mut_semaphoreMap =
@@ -69,7 +67,6 @@ namespace StateStores.InMemory
                             .Enqueue(updateValue(queue.Last()));
                     });
 
-
         private async Task<IDisposable> GetLockAsync<T>()
         {
             var sem = GetSemaphore<T>();
@@ -82,12 +79,11 @@ namespace StateStores.InMemory
 
         #endregion
 
-
         #region  Implementation of IStateStore
 
         public async Task<StateStoreResult> AddAsync<T>(string key, T nextState)
         {
-            using var _ = await GetLockAsync<T>();
+            using var _ = await GetLockAsync<T>().ConfigureAwait(false);
 
             var map = GetStateQueue<T>().Last();
 
@@ -115,7 +111,6 @@ namespace StateStores.InMemory
 
             return new Ok();
         }
-
 
         public async Task<StateStoreResult> RemoveAsync<T>(string key, T currentState)
         {
