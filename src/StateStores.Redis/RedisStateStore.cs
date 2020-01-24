@@ -98,7 +98,7 @@ namespace StateStores.Redis
 
         #region  Internal
 
-        static async Task<StateStoreResult> AddInternalAsync<T>(IDatabase database, string key, T next)
+        private static async Task<StateStoreResult> AddInternalAsync<T>(IDatabase database, string key, T next)
         {
             var transaction = database.CreateTransaction();
             transaction.AddCondition(Condition.HashNotExists(GetHashName<T>(), key));
@@ -111,7 +111,7 @@ namespace StateStores.Redis
             return new Ok();
         }
 
-        static async Task<StateStoreResult> UpdateInternalAsync<T>(IDatabase database, string key, T current, T next)
+        private static async Task<StateStoreResult> UpdateInternalAsync<T>(IDatabase database, string key, T current, T next)
         {
             var transaction = database.CreateTransaction();
             transaction.AddCondition(Condition.HashEqual(GetHashName<T>(), key, ToRedisValue(current)));
@@ -124,7 +124,7 @@ namespace StateStores.Redis
             return new Ok(); 
         }
 
-        static async Task<StateStoreResult> RemoveInternalAsync<T>(IDatabase database, string key, T current)
+        private static async Task<StateStoreResult> RemoveInternalAsync<T>(IDatabase database, string key, T current)
         {
             var transaction = database.CreateTransaction();
             transaction.AddCondition(Condition.HashEqual(GetHashName<T>(), key, ToRedisValue(current)));
@@ -211,7 +211,6 @@ namespace StateStores.Redis
                 .RefCount();
 
         #endregion
-
 
         #region  IDisposable
 
