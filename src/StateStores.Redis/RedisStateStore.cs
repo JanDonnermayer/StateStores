@@ -42,9 +42,12 @@ namespace StateStores.Redis
            $"set_{typeof(TState).FullName}";
 
         private async Task NotifyObserversAsync<TState>() =>
-            await GetSubscriber().PublishAsync(
-                channel: GetChannelName<TState>(),
-                message: RedisValue.EmptyString);
+            await GetSubscriber()
+                .PublishAsync(
+                    channel: GetChannelName<TState>(),
+                    message: RedisValue.EmptyString
+                )
+                .ConfigureAwait(false);
 
         private IObservable<RedisValue> GetObservable(string channel)
         {
@@ -81,7 +84,6 @@ namespace StateStores.Redis
 
         #endregion
 
-
         #region  Constructor
 
         public RedisStateStore(string server)
@@ -94,7 +96,6 @@ namespace StateStores.Redis
 
         #endregion
 
-
         #region  Internal
 
         static async Task<StateStoreResult> AddInternalAsync<T>(IDatabase database, string key, T next)
@@ -105,7 +106,7 @@ namespace StateStores.Redis
             _ = transaction.HashSetAsync(GetHashName<T>(),
                 new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
 
-            if (!await transaction.ExecuteAsync()) return new StateError();
+            if (!await transaction.ExecuteAsync().ConfigureAwait(false)) return new StateError();
 
             return new Ok();
         }
@@ -118,7 +119,7 @@ namespace StateStores.Redis
             _ = transaction.HashSetAsync(GetHashName<T>(),
                 new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
 
-            if (!await transaction.ExecuteAsync()) return new StateError();
+            if (!await transaction.ExecuteAsync().ConfigureAwait(false)) return new StateError();
 
             return new Ok(); 
         }
@@ -130,14 +131,12 @@ namespace StateStores.Redis
 
             _ = transaction.HashDeleteAsync(GetHashName<T>(), key);
 
-            if (!await transaction.ExecuteAsync()) return new StateError();
+            if (!await transaction.ExecuteAsync().ConfigureAwait(false)) return new StateError();
 
             return new Ok();
         }
 
-
         #endregion
-
 
         #region  Implementation of IStateStore
 
@@ -198,14 +197,14 @@ namespace StateStores.Redis
         public IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>() =>
             GetObservable(GetChannelName<T>())
                 .Select(_ => Observable.FromAsync(async () => // React to Messages
-                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>()))
+                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>()).ConfigureAwait(false))
                 ))
                 .Concat()
                 .Merge(Observable.Return( // Start with empty set so states appear added for new subscribers
                     ImmutableDictionary<string, T>.Empty)
                 )
                 .Merge(Observable.FromAsync(async () => // Pass initial set
-                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>()))
+                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>()).ConfigureAwait(false))
                 ))
                 .Buffer(2, 1)
                 .Replay(1)
