@@ -91,8 +91,8 @@ namespace StateStores.Test
 
             void SubscribeNextAndAdd()
             {
-                channel.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
-                channel.OnNext().Subscribe(_ => mut_ActualNextNotificationCount += 1);
+                channel.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount++);
+                channel.OnNext().Subscribe(_ => mut_ActualNextNotificationCount++);
             }
 
             SubscribeNextAndAdd();

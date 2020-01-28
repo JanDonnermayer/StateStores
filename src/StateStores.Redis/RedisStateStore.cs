@@ -198,21 +198,22 @@ namespace StateStores.Redis
         public IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>() =>
             GetObservable(GetChannelName<T>())
                 .Select(_ => Observable.FromAsync(async () => // React to Messages
-                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>()))
+                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>())
+                    .ConfigureAwait(false))
                 ))
                 .Concat()
                 .Merge(Observable.Return( // Start with empty set so states appear added for new subscribers
                     ImmutableDictionary<string, T>.Empty)
                 )
                 .Merge(Observable.FromAsync(async () => // Pass initial set
-                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>()))
+                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>())
+                    .ConfigureAwait(false))
                 ))
                 .Buffer(2, 1)
                 .Replay(1)
                 .RefCount();
 
         #endregion
-
 
         #region  IDisposable
 

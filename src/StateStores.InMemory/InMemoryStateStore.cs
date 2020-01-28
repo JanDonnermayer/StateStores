@@ -82,12 +82,11 @@ namespace StateStores.InMemory
 
         #endregion
 
-
         #region  Implementation of IStateStore
 
         public async Task<StateStoreResult> AddAsync<T>(string key, T nextState)
         {
-            using var _ = await GetLockAsync<T>();
+            using var _ = await GetLockAsync<T>().ConfigureAwait(false);
 
             var map = GetStateQueue<T>().Last();
 
@@ -102,7 +101,7 @@ namespace StateStores.InMemory
 
         public async Task<StateStoreResult> UpdateAsync<T>(string key, T currentState, T nextState)
         {
-            using var _ = await GetLockAsync<T>();
+            using var _ = await GetLockAsync<T>().ConfigureAwait(false);
 
             var map = GetStateQueue<T>().Last();
 
@@ -116,10 +115,9 @@ namespace StateStores.InMemory
             return new Ok();
         }
 
-
         public async Task<StateStoreResult> RemoveAsync<T>(string key, T currentState)
         {
-            using var _ = await GetLockAsync<T>();
+            using var _ = await GetLockAsync<T>().ConfigureAwait(false);
 
             var map = GetStateQueue<T>().Last();
 
@@ -134,7 +132,10 @@ namespace StateStores.InMemory
         }
 
         public IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>() =>
-            GetSubject<T>().Select(_ => GetStateQueue<T>().AsEnumerable());
+          // Start with empty queue, so states appear added for new subscribers
+          Observable.Return(new[] { ImmutableDictionary<string, T>.Empty, GetStateQueue<T>().Last() }).Merge(
+            GetSubject<T>().Select(_ => GetStateQueue<T>().AsEnumerable())
+          );
 
         #endregion
 
