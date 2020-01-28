@@ -98,7 +98,7 @@ namespace StateStores.InMemory
 
         public async Task<StateStoreResult> UpdateAsync<T>(string key, T currentState, T nextState)
         {
-            using var _ = await GetLockAsync<T>();
+            using var _ = await GetLockAsync<T>().ConfigureAwait(false);
 
             var map = GetStateQueue<T>().Last();
 
@@ -114,7 +114,7 @@ namespace StateStores.InMemory
 
         public async Task<StateStoreResult> RemoveAsync<T>(string key, T currentState)
         {
-            using var _ = await GetLockAsync<T>();
+            using var _ = await GetLockAsync<T>().ConfigureAwait(false);
 
             var map = GetStateQueue<T>().Last();
 
