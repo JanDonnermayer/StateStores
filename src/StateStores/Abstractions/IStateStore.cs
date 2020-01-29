@@ -7,15 +7,43 @@ namespace StateStores
 {
     public interface IStateStore
     {
-        Task<StateStoreResult> AddAsync<T>(string key, T next);
-
-        Task<StateStoreResult> UpdateAsync<T>(string key, T current, T next);
-
-        Task<StateStoreResult> RemoveAsync<T>(string key, T current);
+        /// <summary>
+        /// If no state is present for the specified <paramref name="key"/>
+        /// adds the specified <paramref name="nextState"/>, 
+        /// else: returns <see cref="StateError"/>.    
+        /// </summary>
+        /// <param name="key">The key whose state to update.</param>
+        /// <param name="currentState">The expected state for the specified <paramref name="key"/>.</param>
+        /// <param name="nextState">The state to set for the specified <paramref name="key"/>.</param>
+        Task<StateStoreResult> AddAsync<TState>(string key, TState next);
 
         /// <summary>
-        /// Returns an Observable on the latest states.
+        /// If the state for the specified <paramref name="key"/>
+        /// equals the specified <paramref name="currentState"/>,
+        /// sets it to the specified <paramref name="nextState"/>, 
+        /// else: returns <see cref="StateError"/>.    
         /// </summary>
-        IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>();
+        /// <param name="key">The key whose state to update.</param>
+        /// <param name="currentState">The expected state for the specified <paramref name="key"/>.</param>
+        /// <param name="nextState">The state to set for the specified <paramref name="key"/>.</param>
+        Task<StateStoreResult> UpdateAsync<TState>(string key, TState currentState, TState nextState);
+
+        /// <summary>
+        /// If the state for the specified <paramref name="key"/>
+        /// equals the specified <paramref name="currentState"/>,
+        /// removes it,
+        /// else: returns <see cref="StateError"/>.    
+        /// </summary>
+        /// <param name="key">The key whose state to update.</param>
+        /// <param name="currentState">The expected state for the specified <paramref name="key"/>.</param>
+        /// <param name="nextState">The state to set for the specified <paramref name="key"/>.</param>
+        Task<StateStoreResult> RemoveAsync<TState>(string key, TState currentState);
+
+        /// <summary>
+        /// Returns an IObservable that emits the latest states
+        /// among their keys when the states change,
+        /// replaying the latest notification, if any, to new subscribers.
+        /// </summary>
+        IObservable<IEnumerable<ImmutableDictionary<string, TState>>> GetObservable<TState>();
     }
 }
