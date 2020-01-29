@@ -35,11 +35,15 @@ namespace StateStores.Redis
         private ISubscriber GetSubscriber() =>
             lazy_subscriber.Value;
 
+        private const string CHANNEL_NAME_PREFIX = "update_channel_";
+
         private static string GetChannelName<TState>() =>
-           "udpdate_channel_" + typeof(TState).FullName;
+           CHANNEL_NAME_PREFIX + typeof(TState).FullName;
+
+        private const string HASH_NAME_PREFIX = "set_";
 
         private static string GetHashName<TState>() =>
-           $"set_{typeof(TState).FullName}";
+           HASH_NAME_PREFIX + typeof(TState).FullName;
 
         private async Task NotifyObserversAsync<TState>() =>
             await GetSubscriber()
