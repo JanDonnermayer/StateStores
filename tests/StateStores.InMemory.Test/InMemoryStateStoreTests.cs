@@ -15,30 +15,30 @@ namespace StateStores.InMemory.Test
             new InMemoryStateStore();
 
         [Test]
-        public Task TestBasicFunctionalityAsync() => 
+        public Task TestBasicFunctionalityAsync() =>
             GetStateStore()
-                .TestBasicFunctionalityAsync(key: Guid.NewGuid().ToString()); 
+                .TestBasicFunctionalityAsync(key: Guid.NewGuid().ToString());
 
         [Test]
-        public Task TestParallelFunctionalityAsync() => 
+        public Task TestParallelFunctionalityAsync() =>
             GetStateStore()
                 .TestParallelFunctionalityAsync(
-                    activeChannelCount: 5,
-                    stepBlockcount: 100); 
+                    activeChannelCount: 10,
+                    stepBlockcount: 100,
+                    passiveChannelCount: 1000);
 
         [Test]
-        public Task TestReactiveFunctionalityAsync() => 
+        public Task TestReactiveFunctionalityAsync() =>
             GetStateStore()
                 .CreateChannel<int>("key1")
                 .TestReactiveFunctionalityAsync(
                     stepCount: 10,
-                    activeChannelCount: 5); 
+                    activeChannelCount: 5);
 
         [Test]
-        public Task TestReplayFunctionalityAsync() => 
+        public Task TestReplayFunctionalityAsync() =>
             GetStateStore()
                 .CreateChannel<string>("key2")
                 .TestReplayFunctionalityAsync();
-
     }
 }

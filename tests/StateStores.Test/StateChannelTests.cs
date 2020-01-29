@@ -91,8 +91,8 @@ namespace StateStores.Test
 
             void SubscribeNextAndAdd()
             {
-                channel.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount += 1);
-                channel.OnNext().Subscribe(_ => mut_ActualNextNotificationCount += 1);
+                channel.OnAdd.Subscribe(_ => mut_ActualAddNotificationCount++);
+                channel.OnNext().Subscribe(_ => mut_ActualNextNotificationCount++);
             }
 
             SubscribeNextAndAdd();
@@ -118,15 +118,14 @@ namespace StateStores.Test
         public static async Task TestReactiveFunctionalityAsync(
             this IStateChannel<int> channel, int stepCount, int activeChannelCount = 1)
         {
-
-            var mut_actualStateHistory = new List<int>();
-            var exptectedStateHistory = Enumerable.Range(0, stepCount);
+            var actualStateHistory = new List<int>();
+            var exptectedStateHistory = Enumerable.Range(0, stepCount).ToList();
 
             bool ShouldProceed(int i) => (i < stepCount);
 
             bool ShouldStop(int i) => !ShouldProceed(i);
 
-            void LogState(int i) => mut_actualStateHistory.Add(i);
+            void LogState(int i) => actualStateHistory.Add(i);
 
             var tcsStop = new TaskCompletionSource<Unit>();
 
@@ -154,11 +153,12 @@ namespace StateStores.Test
             AssertOk(await channel.AddAsync(INITIAL_STATE));
 
             await tcsStop.Task;
+            await Task.Delay(100);
 
             Assert.IsTrue(
                 condition: Enumerable.SequenceEqual(
                     exptectedStateHistory,
-                    mut_actualStateHistory),
+                    actualStateHistory),
                 message: "Incorrect state history!"
             );
         }

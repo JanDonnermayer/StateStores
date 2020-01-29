@@ -121,7 +121,7 @@ namespace StateStores.Redis
 
             if (!await transaction.ExecuteAsync().ConfigureAwait(false)) return new StateError();
 
-            return new Ok(); 
+            return new Ok();
         }
 
         private static async Task<StateStoreResult> RemoveInternalAsync<T>(IDatabase database, string key, T current)
@@ -196,16 +196,26 @@ namespace StateStores.Redis
 
         public IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>() =>
             GetObservable(GetChannelName<T>())
-                .Select(_ => Observable.FromAsync(async () => // React to Messages
-                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>()).ConfigureAwait(false))
-                ))
-                .Concat()
-                .Merge(Observable.Return( // Start with empty set so states appear added for new subscribers
-                    ImmutableDictionary<string, T>.Empty)
+                .Select(_ => Observable.FromAsync(
+                        async () => DictionaryFromValues<T>(
+                            await GetDatabase()
+                                .HashGetAllAsync(GetHashName<T>())
+                                .ConfigureAwait(false)
+                        )
+                    )
                 )
-                .Merge(Observable.FromAsync(async () => // Pass initial set
-                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>()).ConfigureAwait(false))
-                ))
+                .Concat()
+                // Start with empty set so states appear added for new subscribers
+                .Merge(Observable.Return(ImmutableDictionary<string, T>.Empty))
+                // Pass initial set
+                .Merge(Observable.FromAsync(
+                        async () => DictionaryFromValues<T>(
+                            await GetDatabase()
+                                .HashGetAllAsync(GetHashName<T>())
+                                .ConfigureAwait(false)
+                        )
+                    )
+                )
                 .Buffer(2, 1)
                 .Replay(1)
                 .RefCount();
