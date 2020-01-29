@@ -50,10 +50,10 @@ namespace StateStores
         {
             private readonly IStateStore store;
             private readonly string key;
-            private readonly Lazy<IObservable<IEnumerable<ImmutableDictionary<string, TState>>>> lazyStateObervable;
+            private readonly Lazy<IObservable<IEnumerable<ImmutableDictionary<string, TState>>>> lazyStateObservable;
 
             private IObservable<(ImmutableDictionary<string, TState> previous, ImmutableDictionary<string, TState> current)> GetObservable() =>
-                lazyStateObervable.Value
+                lazyStateObservable.Value
                     .Select(_ => _.Reverse())
                     .Select(_ => (_.Skip(1).First(), _.First()));
 
@@ -61,7 +61,7 @@ namespace StateStores
             {
                 this.store = store ?? throw new ArgumentNullException(nameof(store));
                 this.key = key ?? throw new ArgumentNullException(nameof(key));
-                this.lazyStateObervable = new Lazy<IObservable<IEnumerable<ImmutableDictionary<string, TState>>>>(
+                this.lazyStateObservable = new Lazy<IObservable<IEnumerable<ImmutableDictionary<string, TState>>>>(
                     store.GetObservable<TState>
                 );
             }
