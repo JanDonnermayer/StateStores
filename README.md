@@ -19,7 +19,7 @@ enum States { S1, S2 };
 // ...
 
 var channel = new InMemoryStateStore()
-    .CreateChannel<States>("state1");
+    .ToChannel<States>("state1");
 
 // Reactive-transit: S1 --> S2
 channel

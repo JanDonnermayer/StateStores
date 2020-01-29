@@ -12,7 +12,7 @@ namespace StateStores
 {
     public static class StateChannelBuilder
     {
-        public static IStateChannel<TState> CreateChannel<TState>(this IStateStore store, string key) =>
+        public static IStateChannel<TState> ToChannel<TState>(this IStateStore store, string key) =>
             new StateChannel<TState>(
                 store ?? throw new ArgumentNullException(nameof(store)),
                 key ?? throw new ArgumentNullException(nameof(key)));

@@ -91,7 +91,7 @@ else
    {
       await base.OnParametersSetAsync();
 
-      channel = stateStore.CreateChannel<string>(Name);
+      channel = stateStore.ToChannel<string>(Name);
 
       disposable = channel
          .OnNext()     
