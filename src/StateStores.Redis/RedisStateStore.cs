@@ -103,8 +103,10 @@ namespace StateStores.Redis
             var transaction = database.CreateTransaction();
             transaction.AddCondition(Condition.HashNotExists(GetHashName<T>(), key));
 
-            _ = transaction.HashSetAsync(GetHashName<T>(),
-                new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
+            _ = transaction.HashSetAsync(
+                key: GetHashName<T>(),
+                hashFields: new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) }
+            );
 
             if (!await transaction.ExecuteAsync().ConfigureAwait(false)) return new StateError();
 
@@ -116,8 +118,10 @@ namespace StateStores.Redis
             var transaction = database.CreateTransaction();
             transaction.AddCondition(Condition.HashEqual(GetHashName<T>(), key, ToRedisValue(current)));
 
-            _ = transaction.HashSetAsync(GetHashName<T>(),
-                new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
+            _ = transaction.HashSetAsync(
+                key: GetHashName<T>(),
+                hashFields: new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) }
+            );
 
             if (!await transaction.ExecuteAsync().ConfigureAwait(false)) return new StateError();
 
@@ -129,7 +133,10 @@ namespace StateStores.Redis
             var transaction = database.CreateTransaction();
             transaction.AddCondition(Condition.HashEqual(GetHashName<T>(), key, ToRedisValue(current)));
 
-            _ = transaction.HashDeleteAsync(GetHashName<T>(), key);
+            _ = transaction.HashDeleteAsync(
+                key: GetHashName<T>(),
+                hashField: key
+            );
 
             if (!await transaction.ExecuteAsync().ConfigureAwait(false)) return new StateError();
 
@@ -150,7 +157,8 @@ namespace StateStores.Redis
                 .Catch<Exception>(_ => new ConnectionError())
                 .RetryIncrementallyOn<ConnectionError>(
                     baseDelayMs: 100,
-                    retryCount: 5)
+                    retryCount: 5
+                )
                 .Invoke()
                 .ConfigureAwait(false);
 
@@ -168,7 +176,8 @@ namespace StateStores.Redis
                 .Catch<Exception>(_ => new ConnectionError())
                 .RetryIncrementallyOn<ConnectionError>(
                     baseDelayMs: 100,
-                    retryCount: 5)
+                    retryCount: 5
+                )
                 .Invoke()
                 .ConfigureAwait(false);
 
@@ -186,7 +195,8 @@ namespace StateStores.Redis
                 .Catch<Exception>(_ => new ConnectionError())
                 .RetryIncrementallyOn<ConnectionError>(
                     baseDelayMs: 100,
-                    retryCount: 5)
+                    retryCount: 5
+                )
                 .Invoke()
                 .ConfigureAwait(false);
 
