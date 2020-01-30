@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace StateStores
 {
     /// <summary>
-    /// Providing functionality to add, modify or remove a state.
+    /// Providing functionality to interact with a state.
     /// </summary>
     public interface IStateChannel<TState>
     {

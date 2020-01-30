@@ -5,6 +5,9 @@ using System.Collections.Immutable;
 
 namespace StateStores
 {
+    /// <summary>
+    /// Providing functionality to interact with states.
+    /// </summary>
     public interface IStateStore
     {
         /// <summary>
