@@ -9,7 +9,6 @@ namespace StateStores
 {
     internal static class StateStoreResultBuilder
     {
-
         /// <summary>
         /// Executes the provided function within a try-catch-block.
         /// If an exception of <typeparam name="TException"/> occurs,
@@ -17,7 +16,7 @@ namespace StateStores
         /// is used to create the result.
         /// </summary>
         public static Func<Task<StateStoreResult>> Catch<TException>(this Func<Task<StateStoreResult>> source,
-            Func<TException, StateStoreResult> resultMapper) 
+            Func<TException, StateStoreResult> resultMapper)
         {
             if (source is null)
                 throw new ArgumentNullException(nameof(source));
@@ -56,7 +55,7 @@ namespace StateStores
 
             async Task<StateStoreResult> GetResultAsync()
             {
-                var mut_res = await source.Invoke();
+                var mut_res = await source.Invoke().ConfigureAwait(false);
                 if (!(mut_res is TError)) return mut_res;
 
                 foreach (var timeOut in Enumerable

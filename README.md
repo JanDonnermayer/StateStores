@@ -19,17 +19,17 @@ enum States { S1, S2 };
 // ...
 
 var channel = new InMemoryStateStore()
-    .CreateChannel<States>("state1");
+    .ToChannel<States>("state1");
 
 // Reactive-transit: S1 --> S2
 channel
-    .OnNextWithHandle(States.S1)
+    .OnNextToHandle(States.S1)
     .Update(States.S2)
     .Subscribe();
 
 // Reactive-transit: S2 --> {0}
 channel
-    .OnNextWithHandle(States.S2)
+    .OnNextToHandle(States.S2)
     .Remove()
     .Subscribe();
 

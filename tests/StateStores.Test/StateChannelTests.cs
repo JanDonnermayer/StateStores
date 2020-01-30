@@ -84,7 +84,7 @@ namespace StateStores.Test
             const int EXPECTED_ADD_NOTIFICATION_COUNT = 3;
             const int EXPECTED_NEXT_NOTIFICATION_COUNT = 3;
 
-            const int OBSERVER_DELAY_MS = 200;
+            const int OBSERVER_DELAY_MS = 500;
 
             int mut_ActualAddNotificationCount = 0;
             int mut_ActualNextNotificationCount = 0;
@@ -138,13 +138,13 @@ namespace StateStores.Test
                 .Range(0, activeChannelCount)
                 .Select(_ =>
                     channel
-                        .OnNextWithHandle(ShouldProceed)
+                        .OnNextToHandle(ShouldProceed)
                         .Update(i => i + 1)
                         .Subscribe())
                 .ToList();
 
             channel // Termination
-                .OnNextWithHandle(ShouldStop)
+                .OnNextToHandle(ShouldStop)
                 .Remove()
                 .Do(tcsStop.SetResult)
                 .Subscribe();

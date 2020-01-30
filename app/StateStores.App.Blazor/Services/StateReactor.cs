@@ -20,10 +20,10 @@ namespace StateStores.App.Blazor.Services
         public StateReactor(IStateStore stateStore) =>
             this.stateStore = stateStore ?? throw new System.ArgumentNullException(nameof(stateStore));
 
-        private IDisposable RegisterChatBehaviour(string channel, string trigger, TimeSpan frequency) =>
+        private IDisposable RegisterChatReactor(string channel, string trigger, TimeSpan frequency) =>
             stateStore
-                .CreateChannel<string>(channel)
-                .OnNextWithHandle(trigger)
+                .ToChannel<string>(channel)
+                .OnNextToHandle(trigger)
                 .Delay(frequency)
                 .Update("Jo,")
                 .Delay(frequency)
@@ -36,19 +36,19 @@ namespace StateStores.App.Blazor.Services
                 .Remove()
                 .Subscribe();
 
-        private IDisposable RegisterPulseBehaviour(string channel, TimeSpan frequency) =>
+        private IDisposable RegisterPulseBehavior(string channel, TimeSpan frequency) =>
             stateStore
-                .CreateChannel<string>(channel)
-                .OnNextWithHandle()
+                .ToChannel<string>(channel)
+                .OnNextToHandle()
                 .Delay(frequency)
                 .Update(_ => Guid.NewGuid().ToString())
                 .Subscribe();
 
 
-        private IDisposable RegisterQuackBehaviour(string channel, string trigger, TimeSpan frequency) =>
+        private IDisposable RegisterQuackReactor(string channel, string trigger, TimeSpan frequency) =>
             stateStore
-                .CreateChannel<string>(channel)
-                .OnNextWithHandle(trigger)
+                .ToChannel<string>(channel)
+                .OnNextToHandle(trigger)
                 .Update("quack!")
                 .Delay(frequency)
                 .Update("bye...")
@@ -61,20 +61,24 @@ namespace StateStores.App.Blazor.Services
 
         Task IHostedService.StartAsync(CancellationToken cancellationToken)
         {
-            mut_disposable = RegisterChatBehaviour(
+            mut_disposable = RegisterChatReactor(
                     channel: "Tobi",
                     trigger: "Hey",
-                    frequency: TimeSpan.FromSeconds(1))
-                .Append(RegisterPulseBehaviour(
+                    frequency: TimeSpan.FromSeconds(1)
+                )
+                .Append(RegisterPulseBehavior(
                     channel: "Jan",
-                    frequency: TimeSpan.FromSeconds(1)))
-                .Append(RegisterPulseBehaviour(
+                    frequency: TimeSpan.FromSeconds(1))
+                )
+                .Append(RegisterPulseBehavior(
                     channel: "Elisa",
-                    frequency: TimeSpan.FromSeconds(1)))
-                .Append(RegisterQuackBehaviour(
+                    frequency: TimeSpan.FromSeconds(1))
+                )
+                .Append(RegisterQuackReactor(
                     channel: "Duck",
                     trigger: "say",
-                    frequency: TimeSpan.FromSeconds(1)));
+                    frequency: TimeSpan.FromSeconds(1))
+                );
 
             return Task.CompletedTask;
         }

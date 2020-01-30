@@ -9,12 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using static StateStores.StateStoreResult;
 
-
 namespace StateStores.InMemory
 {
     public sealed class InMemoryStateStore : IStateStore
     {
-
         #region Private Members
 
         private ImmutableDictionary<Type, SemaphoreSlim> mut_semaphoreMap =

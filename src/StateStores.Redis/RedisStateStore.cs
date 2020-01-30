@@ -35,16 +35,23 @@ namespace StateStores.Redis
         private ISubscriber GetSubscriber() =>
             lazy_subscriber.Value;
 
+        private const string CHANNEL_NAME_PREFIX = "update_channel_";
+
         private static string GetChannelName<TState>() =>
-           "udpdate_channel_" + typeof(TState).FullName;
+           CHANNEL_NAME_PREFIX + typeof(TState).FullName;
+
+        private const string HASH_NAME_PREFIX = "set_";
 
         private static string GetHashName<TState>() =>
-           $"set_{typeof(TState).FullName}";
+           HASH_NAME_PREFIX + typeof(TState).FullName;
 
         private async Task NotifyObserversAsync<TState>() =>
-            await GetSubscriber().PublishAsync(
-                channel: GetChannelName<TState>(),
-                message: RedisValue.EmptyString);
+            await GetSubscriber()
+                .PublishAsync(
+                    channel: GetChannelName<TState>(),
+                    message: RedisValue.EmptyString
+                )
+                .ConfigureAwait(false);
 
         private IObservable<RedisValue> GetObservable(string channel)
         {
@@ -81,7 +88,6 @@ namespace StateStores.Redis
 
         #endregion
 
-
         #region  Constructor
 
         public RedisStateStore(string server)
@@ -94,50 +100,54 @@ namespace StateStores.Redis
 
         #endregion
 
-
         #region  Internal
 
-        static async Task<StateStoreResult> AddInternalAsync<T>(IDatabase database, string key, T next)
+        private static async Task<StateStoreResult> AddInternalAsync<T>(IDatabase database, string key, T next)
         {
             var transaction = database.CreateTransaction();
             transaction.AddCondition(Condition.HashNotExists(GetHashName<T>(), key));
 
-            _ = transaction.HashSetAsync(GetHashName<T>(),
-                new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
+            _ = transaction.HashSetAsync(
+                key: GetHashName<T>(),
+                hashFields: new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) }
+            );
 
-            if (!await transaction.ExecuteAsync()) return new StateError();
-
-            return new Ok();
-        }
-
-        static async Task<StateStoreResult> UpdateInternalAsync<T>(IDatabase database, string key, T current, T next)
-        {
-            var transaction = database.CreateTransaction();
-            transaction.AddCondition(Condition.HashEqual(GetHashName<T>(), key, ToRedisValue(current)));
-
-            _ = transaction.HashSetAsync(GetHashName<T>(),
-                new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) });
-
-            if (!await transaction.ExecuteAsync()) return new StateError();
-
-            return new Ok(); 
-        }
-
-        static async Task<StateStoreResult> RemoveInternalAsync<T>(IDatabase database, string key, T current)
-        {
-            var transaction = database.CreateTransaction();
-            transaction.AddCondition(Condition.HashEqual(GetHashName<T>(), key, ToRedisValue(current)));
-
-            _ = transaction.HashDeleteAsync(GetHashName<T>(), key);
-
-            if (!await transaction.ExecuteAsync()) return new StateError();
+            if (!await transaction.ExecuteAsync().ConfigureAwait(false)) return new StateError();
 
             return new Ok();
         }
 
+        private static async Task<StateStoreResult> UpdateInternalAsync<T>(IDatabase database, string key, T current, T next)
+        {
+            var transaction = database.CreateTransaction();
+            transaction.AddCondition(Condition.HashEqual(GetHashName<T>(), key, ToRedisValue(current)));
+
+            _ = transaction.HashSetAsync(
+                key: GetHashName<T>(),
+                hashFields: new HashEntry[] { new KeyValuePair<RedisValue, RedisValue>(key, ToRedisValue(next)) }
+            );
+
+            if (!await transaction.ExecuteAsync().ConfigureAwait(false)) return new StateError();
+
+            return new Ok();
+        }
+
+        private static async Task<StateStoreResult> RemoveInternalAsync<T>(IDatabase database, string key, T current)
+        {
+            var transaction = database.CreateTransaction();
+            transaction.AddCondition(Condition.HashEqual(GetHashName<T>(), key, ToRedisValue(current)));
+
+            _ = transaction.HashDeleteAsync(
+                key: GetHashName<T>(),
+                hashField: key
+            );
+
+            if (!await transaction.ExecuteAsync().ConfigureAwait(false)) return new StateError();
+
+            return new Ok();
+        }
 
         #endregion
-
 
         #region  Implementation of IStateStore
 
@@ -151,7 +161,8 @@ namespace StateStores.Redis
                 .Catch<Exception>(_ => new ConnectionError())
                 .RetryIncrementallyOn<ConnectionError>(
                     baseDelayMs: 100,
-                    retryCount: 5)
+                    retryCount: 5
+                )
                 .Invoke()
                 .ConfigureAwait(false);
 
@@ -169,7 +180,8 @@ namespace StateStores.Redis
                 .Catch<Exception>(_ => new ConnectionError())
                 .RetryIncrementallyOn<ConnectionError>(
                     baseDelayMs: 100,
-                    retryCount: 5)
+                    retryCount: 5
+                )
                 .Invoke()
                 .ConfigureAwait(false);
 
@@ -187,7 +199,8 @@ namespace StateStores.Redis
                 .Catch<Exception>(_ => new ConnectionError())
                 .RetryIncrementallyOn<ConnectionError>(
                     baseDelayMs: 100,
-                    retryCount: 5)
+                    retryCount: 5
+                )
                 .Invoke()
                 .ConfigureAwait(false);
 
@@ -197,18 +210,26 @@ namespace StateStores.Redis
 
         public IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>() =>
             GetObservable(GetChannelName<T>())
-                .Select(_ => Observable.FromAsync(async () => // React to Messages
-                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>())
-                    .ConfigureAwait(false))
-                ))
-                .Concat()
-                .Merge(Observable.Return( // Start with empty set so states appear added for new subscribers
-                    ImmutableDictionary<string, T>.Empty)
+                .Select(_ => Observable.FromAsync(
+                        async () => DictionaryFromValues<T>(
+                            await GetDatabase()
+                                .HashGetAllAsync(GetHashName<T>())
+                                .ConfigureAwait(false)
+                        )
+                    )
                 )
-                .Merge(Observable.FromAsync(async () => // Pass initial set
-                    DictionaryFromValues<T>(await GetDatabase().HashGetAllAsync(GetHashName<T>())
-                    .ConfigureAwait(false))
-                ))
+                .Concat()
+                // Start with empty set so states appear added for new subscribers
+                .Merge(Observable.Return(ImmutableDictionary<string, T>.Empty))
+                // Pass initial set
+                .Merge(Observable.FromAsync(
+                        async () => DictionaryFromValues<T>(
+                            await GetDatabase()
+                                .HashGetAllAsync(GetHashName<T>())
+                                .ConfigureAwait(false)
+                        )
+                    )
+                )
                 .Buffer(2, 1)
                 .Replay(1)
                 .RefCount();

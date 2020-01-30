@@ -30,7 +30,7 @@ namespace StateStores.InMemory.Test
         [Test]
         public Task TestReactiveFunctionalityAsync() =>
             GetStateStore()
-                .CreateChannel<int>("key1")
+                .ToChannel<int>("key1")
                 .TestReactiveFunctionalityAsync(
                     stepCount: 10,
                     activeChannelCount: 5);
@@ -38,7 +38,7 @@ namespace StateStores.InMemory.Test
         [Test]
         public Task TestReplayFunctionalityAsync() =>
             GetStateStore()
-                .CreateChannel<string>("key2")
+                .ToChannel<string>("key2")
                 .TestReplayFunctionalityAsync();
     }
 }

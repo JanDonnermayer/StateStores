@@ -20,7 +20,7 @@ namespace StateStores.Redis.Test
         {
             using var store = RedisStateStoreFactory.GetStateStore();
             await store
-                .CreateChannel<string>(key: Guid.NewGuid().ToString())
+                .ToChannel<string>(key: Guid.NewGuid().ToString())
                 .TestBasicFunctionalityAsync();
         }
 
@@ -29,7 +29,7 @@ namespace StateStores.Redis.Test
         {
             using var store = RedisStateStoreFactory.GetStateStore();
             await store
-                .CreateChannel<int>(key: Guid.NewGuid().ToString())
+                .ToChannel<int>(key: Guid.NewGuid().ToString())
                 .TestReactiveFunctionalityAsync(stepCount: 1000);
         }
 
@@ -38,7 +38,7 @@ namespace StateStores.Redis.Test
         {
             using var store = RedisStateStoreFactory.GetStateStore();
             await store
-                .CreateChannel<string>(key: Guid.NewGuid().ToString())
+                .ToChannel<string>(key: Guid.NewGuid().ToString())
                 .TestReplayFunctionalityAsync();
         }
     }

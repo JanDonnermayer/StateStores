@@ -8,7 +8,7 @@
 
         public class StateError : Error { }
 
-        public class ConnectionError : Error { }        
+        public class ConnectionError : Error { }
     }
 
 }
