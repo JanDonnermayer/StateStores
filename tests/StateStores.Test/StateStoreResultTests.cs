@@ -1,6 +1,5 @@
 using NUnit.Framework;
 
-
 namespace StateStores.Test
 {
     [TestFixture]
@@ -9,19 +8,19 @@ namespace StateStores.Test
         [Test]
         public void Test_Ok()
         {
-            Assert.IsInstanceOf<Ok>( StateStoreResult.Ok);
+            Assert.IsNotNull(StateStoreResult.Ok());
         }
 
         [Test]
         public void Test_StateError()
         {
-            Assert.IsInstanceOf<StateError>(StateStoreResult.StateError);
+            Assert.IsNotNull(StateStoreResult.StateError());
         }
 
         [Test]
         public void Test_ConnectionError()
         {
-            Assert.IsInstanceOf<ConnectionError>( StateStoreResult.ConnectionError);
+            Assert.IsNotNull(StateStoreResult.ConnectionError());
         }
     }
 

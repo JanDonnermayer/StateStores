@@ -2,11 +2,11 @@
 {
     public abstract class StateStoreResult
     {
-        public static Ok Ok { get; }
+        public static Ok Ok() => new Ok();
 
-        public static StateError StateError { get; }
+        public static StateError StateError() => new StateError();
 
-        public static ConnectionError ConnectionError { get; }
+        public static ConnectionError ConnectionError() => new ConnectionError();
 
         internal StateStoreResult() { }
     }
