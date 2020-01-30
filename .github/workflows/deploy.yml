@@ -25,5 +25,9 @@ jobs:
       run: dotnet test --configuration Release
     - name: Pack 
       run: dotnet pack --configuration Release 
-    - name: Publish 
+    - name: Publish StateStores
       run: dotnet nuget push "src/StateStores/bin/Release/*.nupkg"
+    - name: Publish StateStores.Redis
+      run: dotnet nuget push "src/StateStores.Redis/bin/Release/*.nupkg"
+    - name: Publish StateStores.InMemory
+      run: dotnet nuget push "src/StateStores.InMemory/bin/Release/*.nupkg"
