@@ -7,11 +7,12 @@
 
   <PropertyGroup>
     <id>StateStores.Redis</id>
-		<Authors>Jan Donnermayer</Authors>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <description>Provides a simple interface for observing and modifying state atomically.</description>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <projectUrl>https://github.com/JanDonnermayer/StateStores</projectUrl>
+		<Version>0.0.1</Version>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<description>Provides a simple interface for observing and modifying state atomically.</description>
+		<GenerateDocumentationFile>false</GenerateDocumentationFile>
+		<ProjectUrl>https://github.com/JanDonnermayer/StateStores</ProjectUrl>
+		<RepositoryUrl>https://github.com/JanDonnermayer/StateStores</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
