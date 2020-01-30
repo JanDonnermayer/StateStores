@@ -5,7 +5,7 @@ namespace StateStores
 {
     /// <summary>
     /// An immutable view on a single state,
-    /// providing functionality to modify it,
+    /// providing functionality to modify or remove it,
     /// thereby creating a new immutable view.
     /// </summary>
     public interface IImmutableStateHandle<TState>

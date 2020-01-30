@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace StateStores
 {
+    /// <summary>
+    /// Providing functionality to add, modify or remove a state.
+    /// </summary>
     public interface IStateChannel<TState>
     {
         /// <summary>
@@ -16,7 +19,7 @@ namespace StateStores
 
         /// <summary>
         /// Returns an <see cref="IObservable<TState>"/>,
-        /// that emits the previous state and the current state,
+        /// that emits a pair of the previous and the current state,
         /// everytime the state of the channel is set from some state to some other state,
         /// replaying the latest notification (if any) to new subscribers.
         /// </summary>
