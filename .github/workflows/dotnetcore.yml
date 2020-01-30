@@ -23,4 +23,4 @@ jobs:
     - name: Pack 
       run: dotnet pack --configuration Release -p:PackageVersion=$PACKAGE_VERSION
     - name: Publish 
-      run: dotnet nuget push "src/StateStores/bin/Release/netstandard2.0/*.nupkg" --source "github"
+      run: dotnet nuget push "src/StateStores/bin/Release/*.nupkg" --source "github"
