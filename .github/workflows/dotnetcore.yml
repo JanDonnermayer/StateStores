@@ -16,12 +16,11 @@ jobs:
         source-url: https://nuget.pkg.github.com/jandonnermayer/index.json
       env:
         NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        PACKAGE_VERSION: 0.0.1
     - name: Build 
       run: dotnet build --configuration Release
     - name: Test 
       run: dotnet test --configuration Release
     - name: Pack 
-      run: dotnet pack --configuration Release -p:PackageVersion=$PACKAGE_VERSION
+      run: dotnet pack --configuration Release 
     - name: Publish 
       run: dotnet nuget push "src/StateStores/bin/Release/*.nupkg"
