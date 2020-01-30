@@ -23,13 +23,13 @@ var channel = new InMemoryStateStore()
 
 // Reactive-transit: S1 --> S2
 channel
-    .OnNextWithHandle(States.S1)
+    .OnNextToHandle(States.S1)
     .Update(States.S2)
     .Subscribe();
 
 // Reactive-transit: S2 --> {0}
 channel
-    .OnNextWithHandle(States.S2)
+    .OnNextToHandle(States.S2)
     .Remove()
     .Subscribe();
 

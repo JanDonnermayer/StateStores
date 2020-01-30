@@ -10,13 +10,12 @@ using System.Threading.Tasks;
 
 namespace StateStores
 {
-    public static class StateChannelProvider
+    public static class StateChannel
     {
         public static IStateChannel<TState> ToChannel<TState>(this IStateStore store, string key) =>
-            new StateChannel<TState>(
+            new Instance<TState>(
                 store ?? throw new ArgumentNullException(nameof(store)),
                 key ?? throw new ArgumentNullException(nameof(key)));
-
 
         public static IObservable<TState> OnNext<TState>(this IStateChannel<TState> channel) =>
             (channel ?? throw new ArgumentNullException(nameof(channel)))
@@ -30,7 +29,6 @@ namespace StateStores
             (channel ?? throw new ArgumentNullException(nameof(channel)))
                 .OnNext().Where(state => EqualityComparer<TState>.Default.Equals(state, value));
 
-
         public static IObservable<TState> OnPrevious<TState>(this IStateChannel<TState> channel) =>
             (channel ?? throw new ArgumentNullException(nameof(channel)))
                 .OnRemove.Merge(channel.OnUpdate.Select(_ => _.previousState));
@@ -43,10 +41,9 @@ namespace StateStores
             (channel ?? throw new ArgumentNullException(nameof(channel)))
                 .OnPrevious().Where(state => EqualityComparer<TState>.Default.Equals(state, value));
 
-
         #region  Private Types
 
-        private class StateChannel<TState> : IStateChannel<TState>
+        private class Instance<TState> : IStateChannel<TState>
         {
             private readonly IStateStore store;
             private readonly string key;
@@ -57,7 +54,7 @@ namespace StateStores
                     .Select(_ => _.Reverse())
                     .Select(_ => (_.Skip(1).First(), _.First()));
 
-            public StateChannel(IStateStore store, string key)
+            public Instance(IStateStore store, string key)
             {
                 this.store = store ?? throw new ArgumentNullException(nameof(store));
                 this.key = key ?? throw new ArgumentNullException(nameof(key));

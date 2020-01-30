@@ -23,7 +23,7 @@ namespace StateStores.App.Blazor.Services
         private IDisposable RegisterChatReactor(string channel, string trigger, TimeSpan frequency) =>
             stateStore
                 .ToChannel<string>(channel)
-                .OnNextWithHandle(trigger)
+                .OnNextToHandle(trigger)
                 .Delay(frequency)
                 .Update("Jo,")
                 .Delay(frequency)
@@ -39,7 +39,7 @@ namespace StateStores.App.Blazor.Services
         private IDisposable RegisterPulseBehavior(string channel, TimeSpan frequency) =>
             stateStore
                 .ToChannel<string>(channel)
-                .OnNextWithHandle()
+                .OnNextToHandle()
                 .Delay(frequency)
                 .Update(_ => Guid.NewGuid().ToString())
                 .Subscribe();
@@ -48,7 +48,7 @@ namespace StateStores.App.Blazor.Services
         private IDisposable RegisterQuackReactor(string channel, string trigger, TimeSpan frequency) =>
             stateStore
                 .ToChannel<string>(channel)
-                .OnNextWithHandle(trigger)
+                .OnNextToHandle(trigger)
                 .Update("quack!")
                 .Delay(frequency)
                 .Update("bye...")

@@ -138,13 +138,13 @@ namespace StateStores.Test
                 .Range(0, activeChannelCount)
                 .Select(_ =>
                     channel
-                        .OnNextWithHandle(ShouldProceed)
+                        .OnNextToHandle(ShouldProceed)
                         .Update(i => i + 1)
                         .Subscribe())
                 .ToList();
 
             channel // Termination
-                .OnNextWithHandle(ShouldStop)
+                .OnNextToHandle(ShouldStop)
                 .Remove()
                 .Do(tcsStop.SetResult)
                 .Subscribe();
