@@ -15,7 +15,7 @@ namespace StateStores.Test
             Assert.IsInstanceOf(typeof(Ok), result);
 
         static void AssertError(StateStoreResult result) =>
-            Assert.IsInstanceOf(typeof(Error), result);
+            Assert.IsInstanceOf(typeof(ErrorResult), result);
 
         public static async Task TestBasicFunctionalityAsync(this IStateStore store, string key)
         {
@@ -42,25 +42,28 @@ namespace StateStores.Test
         }
 
         public static async Task TestParallelFunctionalityAsync(
-            this IStateStore store, int activeChannelCount = 10, 
+            this IStateStore store, int activeChannelCount = 10,
             int stepBlockcount = 100, int passiveChannelCount = 1000)
         {
             await Task.WhenAll(Enumerable
                 .Range(0, passiveChannelCount)
-                .Select(i => store.AddAsync($"passive_{i}", "state0")));
+                .Select(i => store.AddAsync($"passive_{i}", "state0")))
+                .ConfigureAwait(false);
 
             await Task.WhenAll(Enumerable
                 .Range(0, activeChannelCount)
                 .Select(async i =>
                 {
                     for (int j = 0; j < stepBlockcount; j++)
-                        await TestBasicFunctionalityAsync(store, i.ToString());
-                }));
+                        await TestBasicFunctionalityAsync(store, i.ToString()).ConfigureAwait(false);
+                }))
+                .ConfigureAwait(false);
 
             await Task.WhenAll(Enumerable
                 .Range(0, passiveChannelCount)
-                .Select(i =>store.RemoveAsync($"passive_{i}", "state0")));
+                .Select(i => store.RemoveAsync($"passive_{i}", "state0")))
+                .ConfigureAwait(false);
         }
-        
     }
+
 }

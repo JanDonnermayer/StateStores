@@ -2,13 +2,23 @@
 {
     public abstract class StateStoreResult
     {
-        public sealed class Ok : StateStoreResult { }
+        public static Ok Ok { get; }
 
-        public class Error : StateStoreResult { }
+        public static StateError StateError { get; }
 
-        public class StateError : Error { }
+        public static ConnectionError ConnectionError { get; }
 
-        public class ConnectionError : Error { }
+        internal StateStoreResult() { }
     }
 
+    public abstract class ErrorResult : StateStoreResult
+    {
+        internal ErrorResult() { }
+    }
+
+    public sealed class Ok : StateStoreResult { }
+
+    public sealed class StateError : ErrorResult { }
+
+    public sealed class ConnectionError : ErrorResult { }
 }

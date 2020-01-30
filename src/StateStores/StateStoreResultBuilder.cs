@@ -48,7 +48,7 @@ namespace StateStores
         public static Func<Task<StateStoreResult>> RetryIncrementallyOn<TError>(
             this Func<Task<StateStoreResult>> source,
             int baseDelayMs = 100,
-            int retryCount = 5) where TError : Error
+            int retryCount = 5) where TError : ErrorResult
         {
             if (source is null)
                 throw new ArgumentNullException(nameof(source));
