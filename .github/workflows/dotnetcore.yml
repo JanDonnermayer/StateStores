@@ -20,6 +20,6 @@ jobs:
     - name: Test 
       run: dotnet test --configuration Release
     - name: Pack 
-      run: dotnet pack --configuration Release
+      run: dotnet pack --configuration Release -p:PackageVersion=0.0.1
     - name: Publish 
-      run: dotnet nuget push src/StateStores/bin/Release/*.nupkg -p:PackageVersion=0.0.1
+      run: dotnet nuget push src/StateStores/bin/Release/*.nupkg 
