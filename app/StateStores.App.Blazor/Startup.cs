@@ -31,11 +31,12 @@ namespace StateStores.App.Blazor
             services.AddServerSideBlazor();
 
             services.AddSingleton<IStateStore>(_ =>
-                Configuration["REDIS_URL"] switch
-                {
-                    string server => new RedisStateStore(server),
-                    _ => new InMemoryStateStore()
-                });
+            {
+                if (Configuration.TryResolveValue("REDIS_URL", out var server))
+                    return new RedisStateStore(server);
+                else
+                    return new InMemoryStateStore();
+            });
 
             services.AddHostedService<StateReactor>();
         }
