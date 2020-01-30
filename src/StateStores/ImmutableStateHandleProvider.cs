@@ -8,7 +8,7 @@ namespace StateStores
 
     public static class ImmutableStateHandleProvider
     {
-        public static IObservable<IImmutableStateHandle<TState>> CreateHandle<TState>(
+        public static IObservable<IImmutableStateHandle<TState>> ToHandle<TState>(
             this IStateChannel<TState> channel, 
             Func<IStateChannel<TState>, IObservable<TState>> filter) =>
                 (filter ?? throw new ArgumentNullException(nameof(filter)))
@@ -36,7 +36,7 @@ namespace StateStores
                     .Concat();
 
         public static IObservable<IImmutableStateHandle<TState>> Update<TState>(
-            this IObservable<IImmutableStateHandle<TState>> handleObservable, 
+            this IObservable<IImmutableStateHandle<TState>> handleObservable,
             Func<TState, TState> nextStateProvider) =>
                 (handleObservable ?? throw new ArgumentNullException(nameof(handleObservable)))
                     .Select(handle => handle.Update(nextStateProvider))
@@ -51,17 +51,17 @@ namespace StateStores
         public static IObservable<IImmutableStateHandle<TState>> OnNextWithHandle<TState>(
             this IStateChannel<TState> channel) =>
                 (channel ?? throw new ArgumentNullException(nameof(channel)))
-                    .CreateHandle(cnl => cnl.OnNext());
+                    .ToHandle(cnl => cnl.OnNext());
 
         public static IObservable<IImmutableStateHandle<TState>> OnNextWithHandle<TState>(
             this IStateChannel<TState> channel, Func<TState, bool> filter) =>
                 (channel ?? throw new ArgumentNullException(nameof(channel)))
-                    .CreateHandle(cnl => cnl.OnNext(filter));
+                    .ToHandle(cnl => cnl.OnNext(filter));
 
         public static IObservable<IImmutableStateHandle<TState>> OnNextWithHandle<TState>(
             this IStateChannel<TState> channel, TState filter) =>
                 (channel ?? throw new ArgumentNullException(nameof(channel)))
-                    .CreateHandle(cnl => cnl.OnNext(filter));
+                    .ToHandle(cnl => cnl.OnNext(filter));
 
 
         #region  Private Types
