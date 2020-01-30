@@ -1,10 +1,19 @@
 # StateStores
 
-[![](https://github.com/JanDonnermayer/StateStores/workflows/UnitTests/badge.svg)](
+[![](https://github.com/JanDonnermayer/StateStores/workflows/Unit%20Tests/badge.svg)](
 https://github.com/JanDonnermayer/StateStores/actions)
+
+StateStores.Redis:
+
+[![](https://img.shields.io/badge/nuget-v0.0.4-blue.svg)](
+https://www.nuget.org/packages/StateStores.Redis/)
+
+StateStores.InMemory:
 
 [![](https://img.shields.io/badge/nuget-v0.0.4-blue.svg)](
 https://www.nuget.org/packages/StateStores.InMemory/)
+
+## Description
 
 Provides a simple interface for observing and modifying state atomically.
 
