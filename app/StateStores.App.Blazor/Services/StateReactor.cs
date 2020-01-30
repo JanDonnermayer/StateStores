@@ -64,17 +64,21 @@ namespace StateStores.App.Blazor.Services
             mut_disposable = RegisterChatReactor(
                     channel: "Tobi",
                     trigger: "Hey",
-                    frequency: TimeSpan.FromSeconds(1))
+                    frequency: TimeSpan.FromSeconds(1)
+                )
                 .Append(RegisterPulseBehavior(
                     channel: "Jan",
-                    frequency: TimeSpan.FromSeconds(1)))
+                    frequency: TimeSpan.FromSeconds(1))
+                )
                 .Append(RegisterPulseBehavior(
                     channel: "Elisa",
-                    frequency: TimeSpan.FromSeconds(1)))
+                    frequency: TimeSpan.FromSeconds(1))
+                )
                 .Append(RegisterQuackReactor(
                     channel: "Duck",
                     trigger: "say",
-                    frequency: TimeSpan.FromSeconds(1)));
+                    frequency: TimeSpan.FromSeconds(1))
+                );
 
             return Task.CompletedTask;
         }
