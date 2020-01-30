@@ -8,10 +8,12 @@
 	<PropertyGroup>
 		<id>StateStores.InMemory</id>
 		<Authors>Jan Donnermayer</Authors>
+		<Version>0.0.1</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<description>Provides a simple interface for observing and modifying state atomically.</description>
 		<GenerateDocumentationFile>false</GenerateDocumentationFile>
-		<projectUrl>https://github.com/JanDonnermayer/StateStores</projectUrl>
+		<ProjectUrl>https://github.com/JanDonnermayer/StateStores</ProjectUrl>
+		<RepositoryUrl>https://github.com/JanDonnermayer/StateStores</RepositoryUrl>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -20,7 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\StateStores\StateStores.csproj" />
+		<ProjectReference Include="..\StateStores\StateStores.csproj" />
 	</ItemGroup>
 
 </Project>
