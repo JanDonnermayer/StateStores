@@ -2,8 +2,8 @@ name: Deploy to GPR
 
 on:   
   release:
-      branches:
-        - master
+    branches:
+      - master
 
 jobs:
   build:
