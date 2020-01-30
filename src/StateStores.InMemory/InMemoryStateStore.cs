@@ -73,7 +73,7 @@ namespace StateStores.InMemory
 
             var map = GetStateMap<T>();
 
-            if (map.ContainsKey(key)) return new Error();
+            if (map.ContainsKey(key)) return StateError();
 
             PushStateMap<T>(m => m.SetItem(key, nextState));
 
@@ -88,8 +88,8 @@ namespace StateStores.InMemory
 
             var map = GetStateMap<T>();
 
-            if (!map.TryGetValue(key, out var val)) return new Error();
-            if (!val.Equals(currentState)) return new Error();
+            if (!map.TryGetValue(key, out var val)) return StateError();
+            if (!val.Equals(currentState)) return StateError();
 
             PushStateMap<T>(m => m.SetItem(key, nextState));
 
@@ -104,8 +104,8 @@ namespace StateStores.InMemory
 
             var map = GetStateMap<T>();
 
-            if (!map.TryGetValue(key, out var val)) return new Error();
-            if (!val.Equals(currentState)) return new Error();
+            if (!map.TryGetValue(key, out var val)) return StateError();
+            if (!val.Equals(currentState)) return StateError();
 
             PushStateMap<T>(m => m.Remove(key));
 
