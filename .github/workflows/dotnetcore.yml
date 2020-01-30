@@ -21,5 +21,7 @@ jobs:
       run: dotnet test --configuration Release
     - name: Pack 
       run: dotnet pack --configuration Release -p:PackageVersion=0.0.1
+    - name: Setup Nuget Config
+      run: sed 's/GITHUB_TOKEN/${{ secrets.GITHUB_TOKEN }}/g' .nuget.config > nuget.config
     - name: Publish 
       run: dotnet nuget push src/StateStores/bin/Release/netstandard2.0/*.nupkg --source "github"
