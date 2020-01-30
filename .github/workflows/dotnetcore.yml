@@ -1,4 +1,4 @@
-name: Unit Tests
+name: Deploy
 
 on: [push]
 
@@ -13,7 +13,13 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.100
-    - name: Build with dotnet
+      env:
+       NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    - name: Build 
       run: dotnet build --configuration Release
-    - name: Test with dotnet
+    - name: Test 
       run: dotnet test --configuration Release
+    - name: Pack 
+      run: dotnet pack --configuration Release
+    - name: Publish Core
+      run: dotnet nuget push src/StateStores/bin/Release/*.nupkg -p PackageVersion=0.0.1
