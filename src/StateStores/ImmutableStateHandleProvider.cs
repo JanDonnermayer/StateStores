@@ -6,7 +6,7 @@ using static StateStores.StateStoreResult;
 namespace StateStores
 {
 
-    public static class ImmutableStateHandleBuilder
+    public static class ImmutableStateHandleProvider
     {
         public static IObservable<IImmutableStateHandle<TState>> CreateHandle<TState>(
             this IStateChannel<TState> channel, 

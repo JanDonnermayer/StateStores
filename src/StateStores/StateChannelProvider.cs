@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace StateStores
 {
-    public static class StateChannelBuilder
+    public static class StateChannelProvider
     {
         public static IStateChannel<TState> ToChannel<TState>(this IStateStore store, string key) =>
             new StateChannel<TState>(
