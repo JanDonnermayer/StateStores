@@ -1,6 +1,6 @@
 name: Deploy
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -14,7 +14,7 @@ jobs:
       with:
         dotnet-version: 3.1.100
       env:
-       NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
     - name: Build 
       run: dotnet build --configuration Release
     - name: Test 
@@ -22,4 +22,4 @@ jobs:
     - name: Pack 
       run: dotnet pack --configuration Release -p:PackageVersion=0.0.1
     - name: Publish 
-      run: dotnet nuget push src/StateStores/bin/Release/nestandard2.0/*.nupkg 
+      run: dotnet nuget push src/StateStores/bin/Release/netstandard2.0/*.nupkg --source "github"
