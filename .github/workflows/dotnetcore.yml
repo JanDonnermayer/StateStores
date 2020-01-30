@@ -22,4 +22,4 @@ jobs:
     - name: Pack 
       run: dotnet pack --configuration Release -p:PackageVersion=0.0.1
     - name: Publish 
-      run: dotnet nuget push src/StateStores/bin/Release/*.nupkg 
+      run: dotnet nuget push src/StateStores/bin/Release/nestandard2.0/*.nupkg 
