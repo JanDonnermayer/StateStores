@@ -1,9 +1,6 @@
 name: Deploy to GPR
 
-on: 
-  pull_request:
-      branches:
-        - release
+on: [release]
 
 jobs:
   build:
