@@ -10,6 +10,9 @@ namespace StateStores
     /// </summary>
     public interface IImmutableStateHandle<TState>
     {
+        /// <summary>
+        /// The state captured by this handle.
+        /// </summary>
         TState State { get; }
 
         /// <summary>

@@ -10,7 +10,7 @@ namespace StateStores
     public interface IStateChannel<TState>
     {
         /// <summary>
-        /// Returns an <see cref="IObservable<TState>"/>,
+        /// Returns an <see cref="IObservable{TState}"/>,
         /// that emits the current state,
         /// everytime the state of the channel is set from no state to some state,
         /// replaying the latest notification (if any) to new subscribers.
@@ -18,7 +18,7 @@ namespace StateStores
         IObservable<TState> OnAdd { get; }
 
         /// <summary>
-        /// Returns an <see cref="IObservable<TState>"/>,
+        /// Returns an <see cref="IObservable{TState}"/>,
         /// that emits a pair of the previous and the current state,
         /// everytime the state of the channel is set from some state to some other state,
         /// replaying the latest notification (if any) to new subscribers.
@@ -26,7 +26,7 @@ namespace StateStores
         IObservable<(TState previousState, TState currentState)> OnUpdate { get; }
 
         /// <summary>
-        /// Returns an <see cref="IObservable<TState>"/>,
+        /// Returns an <see cref="IObservable{TState}"/>,
         /// that emits the previous state,
         /// everytime the state of the channel is set from some state to no state,
         /// replaying the latest notification (if any) to new subscribers.

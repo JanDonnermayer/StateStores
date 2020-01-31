@@ -13,6 +13,10 @@ using static StateStores.StateStoreResult;
 
 namespace StateStores.Redis
 {
+    /// <summary>
+    /// An <see cref="IStateStore"/> implementation,
+    /// using Redis.
+    /// </summary>
     public sealed class RedisStateStore : IStateStore, IDisposable
     {
 
@@ -90,6 +94,11 @@ namespace StateStores.Redis
 
         #region  Constructor
 
+        /// <summary>
+        /// Creates a new instance of the <see cref="RedisStateStore"/>class, 
+        /// using the specified <paramref name="server"/>
+        /// </summary>
+        /// <param name="server"></param>
         public RedisStateStore(string server)
         {
             this.server = server ?? throw new ArgumentNullException(nameof(server));
