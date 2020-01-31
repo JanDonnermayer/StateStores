@@ -13,20 +13,22 @@ namespace System
         private int _disposed;
         private readonly Stack<IDisposable> _disposeStack;
 
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="DisposeHandle"/> class.
+        /// Initializes a new instance of the <see cref="DisposeHandle{T}"/> class.
         /// </summary>
-        /// <param name="objectName">The name of the object that employs this handle.</param>
         public DisposeHandle(params IDisposable[] disposables)
         {
-             _disposeStack = new Stack<IDisposable>(disposables ?? new IDisposable[] { });
+            _disposeStack = new Stack<IDisposable>(disposables ?? Array.Empty<IDisposable>());
             CancellationTokenSource CTS = new CancellationTokenSource();
             this.CancellationToken = CTS.Token;
+#pragma warning disable CA2000 // Instance is disposed in routine
             _disposeStack.Push(Disposable.Create(() => CTS.Cancel()));
+#pragma warning restore
         }
 
-
+        /// <summary>
+        /// Whether this instance is disposed.
+        /// </summary>
         public bool IsDisposed =>
             _disposed == 1;
 
@@ -62,7 +64,9 @@ namespace System
         {
             this.Test();
             if (action == null) throw new ArgumentNullException(nameof(action));
+#pragma warning disable CA2000 // Instance is disposed in routine
             _disposeStack.Push(Disposable.Create(action));
+#pragma warning restore
             return this;
         }
 
@@ -75,14 +79,14 @@ namespace System
                 throw new ObjectDisposedException(typeof(TOwner).Name);
         }
 
+        /// <summary>
+        /// Disposes this instance.
+        /// </summary>
         public void Dispose()
         {
-            if (System.Threading.Interlocked.Exchange(ref _disposed, 1) == 1)
-                throw new ObjectDisposedException(typeof(TOwner).Name);
-            while (_disposeStack.Any())
+            if (System.Threading.Interlocked.Exchange(ref _disposed, 1) == 1) return;
+            while (_disposeStack.Count > 0)
                 _disposeStack.Pop().Dispose();
         }
-
-    
-}
+    }
 }
