@@ -7,7 +7,7 @@
 
   <PropertyGroup>
     <id>StateStores.Redis</id>
-		<Version>0.0.5</Version>
+		<Version>0.0.5-pre1</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<description>Provides a simple interface for observing and modifying state atomically.</description>
 		<GenerateDocumentationFile>false</GenerateDocumentationFile>
