@@ -8,7 +8,7 @@ namespace StateStores
     public static class ImmutableStateHandle
     {
         public static IObservable<IImmutableStateHandle<TState>> ToHandle<TState>(
-            this IStateChannel<TState> channel, 
+            this IStateChannel<TState> channel,
             Func<IStateChannel<TState>, IObservable<TState>> filter) =>
                 (filter ?? throw new ArgumentNullException(nameof(filter)))
                     .Invoke(channel ?? throw new ArgumentNullException(nameof(channel)))
