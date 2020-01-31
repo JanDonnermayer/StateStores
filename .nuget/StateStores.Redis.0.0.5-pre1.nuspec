@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>StateStores.Redis</id>
+    <version>0.0.5-pre1</version>
+    <authors>StateStores.Redis</authors>
+    <owners>StateStores.Redis</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="file">LICENSE</license>
+    <description>Provides a simple interface for observing and modifying state atomically.</description>
+    <projectUrl>https://github.com/JanDonnermayer/StateStores</projectUrl>
+    <repository type="git" url="https://github.com/JanDonnermayer/StateStores"/>
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="StateStores" version="0.0.5-pre1" exclude="Build,Analyzers" />
+        <dependency id="Newtonsoft.Json" version="12.0.3" exclude="Build,Analyzers" />
+        <dependency id="Stackexchange.Redis" version="2.0.601" exclude="Build,Analyzers" />
+        <dependency id="System.Collections.Immutable" version="1.6.0" exclude="Build,Analyzers" />
+        <dependency id="System.Reactive" version="4.2.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\src\StateStores.Redis\bin\release\netstandard2.0\StateStores.Redis.dll" target="lib\netstandard2.0\StateStores.Redis.dll" />
+    <file src="..\src\StateStores.Redis\bin\release\netstandard2.0\StateStores.Redis.xml" target="lib\netstandard2.0\StateStores.Redis.xml" />
+    <file src="..\LICENSE" target="LICENSE" />
+  </files>
+</package>

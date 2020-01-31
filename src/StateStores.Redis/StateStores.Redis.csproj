@@ -10,7 +10,7 @@
 		<Version>0.0.5-pre1</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<description>Provides a simple interface for observing and modifying state atomically.</description>
-		<GenerateDocumentationFile>false</GenerateDocumentationFile>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<ProjectUrl>https://github.com/JanDonnermayer/StateStores</ProjectUrl>
 		<RepositoryUrl>https://github.com/JanDonnermayer/StateStores</RepositoryUrl>
   </PropertyGroup>
