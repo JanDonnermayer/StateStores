@@ -14,8 +14,8 @@ using static StateStores.StateStoreResult;
 namespace StateStores.Redis
 {
     /// <summary>
-    /// An <see cref="IStateStore"/> implementation,
-    /// using Redis.
+    /// An <see cref="IStateStore"/> implementation, 
+    /// using Redis for persistence and subscriptions.
     /// </summary>
     public sealed class RedisStateStore : IStateStore, IDisposable
     {

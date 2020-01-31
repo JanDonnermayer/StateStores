@@ -11,6 +11,10 @@ using static StateStores.StateStoreResult;
 
 namespace StateStores.InMemory
 {
+    /// <summary>
+    /// An <see cref="IStateStore"/> implementation, 
+    /// using memory for persistence and subscriptions.
+    /// </summary>
     public sealed class InMemoryStateStore : IStateStore
     {
         #region Private Members
@@ -67,6 +71,7 @@ namespace StateStores.InMemory
 
         #region  Implementation of IStateStore
 
+        /// <Inheritdoc/>
         public async Task<StateStoreResult> AddAsync<T>(string key, T nextState)
         {
             using var @lock = await GetLockAsync<T>().ConfigureAwait(false);
@@ -82,6 +87,7 @@ namespace StateStores.InMemory
             return new Ok();
         }
 
+        /// <Inheritdoc/>
         public async Task<StateStoreResult> UpdateAsync<T>(string key, T currentState, T nextState)
         {
             using var @lock = await GetLockAsync<T>().ConfigureAwait(false);
@@ -98,6 +104,7 @@ namespace StateStores.InMemory
             return new Ok();
         }
 
+        /// <Inheritdoc/>
         public async Task<StateStoreResult> RemoveAsync<T>(string key, T currentState)
         {
             using var @lock = await GetLockAsync<T>().ConfigureAwait(false);
@@ -114,9 +121,10 @@ namespace StateStores.InMemory
             return new Ok();
         }
 
+        /// <Inheritdoc/>
         public IObservable<IEnumerable<ImmutableDictionary<string, T>>> GetObservable<T>() =>
             GetSubject<T>().Select(_ => GetStateMap<T>())
-                 // Start with empty set so states appear added for new subscribers
+                // Start with empty set so states appear added for new subscribers
                 .Merge(Observable.Return(ImmutableDictionary<string, T>.Empty))
                 .Merge(Observable.Return(GetStateMap<T>()))
                 .Buffer(2, 1)
