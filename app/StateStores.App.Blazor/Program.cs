@@ -21,9 +21,9 @@ namespace StateStores.App.Blazor
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, config) =>
-                {            
+                {
                     config.AddInMemoryCollection(new Dictionary<string,string>()
-                    {    
+                    {
                         //                    
                     });
 
@@ -33,9 +33,6 @@ namespace StateStores.App.Blazor
                         .AddEnvironmentVariables()
                         .AddCommandLine(args);
                 })
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
+                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
     }
 }
